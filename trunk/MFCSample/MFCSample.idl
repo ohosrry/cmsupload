@@ -1,0 +1,29 @@
+// MFCSample.idl : MFCSample.exe 的类型库源
+
+// 此文件将由 MIDL 编译器处理以产生
+// 类型库(MFCSample.tlb)。
+
+[ uuid(C9ACE8F1-5F91-4CA9-BFF8-3A4B4E43A797), version(1.0) ]
+library MFCSample
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  CMFCSampleDoc 的主调度接口
+	
+	[ uuid(79036F14-928F-4393-8915-A7DA2FCC0658) ]
+	dispinterface IMFCSample
+	{
+		properties:
+			
+		methods:
+	};
+
+	//  CMFCSampleDoc 的类信息
+	
+	[ uuid(7101368D-BCCC-4519-B397-565559D64C2C) ]
+	coclass MFCSample
+	{
+		[default] dispinterface IMFCSample;
+	};
+};

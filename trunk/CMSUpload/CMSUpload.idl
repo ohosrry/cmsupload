@@ -1,0 +1,57 @@
+// CMSUpload.idl : ActiveX 控件项目的类型库源。
+
+// 此文件将由 MIDL 编译器工具处理以
+// 产生类型库(CMSUpload.tlb)，该类型库将成为
+// CMSUpload.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(E9FA885A-EA4D-474A-B4D4-C1C9A64229A6), version(1.0),
+  helpfile("CMSUpload.hlp"),
+  helpstring("CMSUpload ActiveX 控件模块"),
+  control ]
+library CMSUploadLib
+{
+	importlib(STDOLE_TLB);
+
+	//  CCMSUploadCtrl 的主调度接口
+
+	[ uuid(63572DDD-A45A-4864-BC84-012B89E78868),
+	  helpstring("CMSUpload Control 的调度接口")]
+	dispinterface _DCMSUpload
+	{
+		properties:
+		methods:
+
+			[id(DISPID_ABOUTBOX)] void AboutBox();
+			[id(DISPID_DOCLICK)] void DoClick();
+	};
+
+	//  CCMSUploadCtrl 的事件调度接口
+
+	[ uuid(5E794A69-D4C4-4BEA-9ABC-2BE1C59641A7),
+	  helpstring("CMSUpload Control 的事件接口") ]
+	dispinterface _DCMSUploadEvents
+	{
+		properties:
+			//  事件接口没有任何属性
+
+		methods:
+			[id(DISPID_MOUSEUP)] void MouseUp(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+			[id(DISPID_KEYDOWN)] void KeyDown(SHORT* KeyCode, SHORT Shift);
+			[id(DISPID_DBLCLICK)] void DblClick(void);
+			[id(DISPID_MOUSEMOVE)] void MouseMove(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+	};
+
+	//  CCMSUploadCtrl 的类信息
+
+	[ uuid(C79D3A60-1BD0-419B-8840-8E2CC4778569),
+	  helpstring("CMSUpload Control"), control ]
+	coclass CMSUpload
+	{
+		[default] dispinterface _DCMSUpload;
+		[default, source] dispinterface _DCMSUploadEvents;
+	};
+
+};
