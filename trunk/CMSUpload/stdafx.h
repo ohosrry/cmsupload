@@ -34,7 +34,7 @@
 #endif // _AFX_NO_DAO_SUPPORT
 
 #endif // _WIN64
-#define SAFE_DELETE(p) if(p)\
+#define SAFE_DELETE(p) if(p!=NULL)\
 {\
 	delete p;\
 	p=NULL;\
@@ -43,5 +43,35 @@
 #include <map>
 #include <fcntl.h>
 #include <fstream>
+#include <sstream>
+#include <algorithm>
+#include "atlimage.h"
+#include <stdio.h>
+#include <tchar.h>
+#include <iostream>
+#include <locale.h>
+#include <wchar.h>
+#include <errno.h>
+#include <cassert>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <WinNT.h>
 using namespace std;
+#define MB(T) ::MessageBoxW(NULL,T,T,MB_OK);
+#define MBA(T) ::MessageBoxA(NULL,T,T,MB_OK);
 void log(TCHAR *function,TCHAR *message);
+int upload_file(const char *uploadpath,const char *filepath);
+LPCSTR WS2AS(const LPWSTR src);
+LPWSTR AS2WS(const LPCSTR  src);
+struct STIMAGE{
+	CImage *m_image;
+	CStatic *m_static;
+	CString m_path;
+	int m_image_num;
+	~STIMAGE(){
+        SAFE_DELETE(m_image)
+		SAFE_DELETE(m_static)
+	}
+};
+class CCMSUploadCtrl;
+

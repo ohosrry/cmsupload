@@ -47,6 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="D:\dev\phpsdk\deps\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -71,8 +72,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
+				AdditionalDependencies="libcurl_imp.lib"
 				OutputFile="$(OutDir)\$(ProjectName).ocx"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;D:\dev\curl-7.23.1\lib\DLL-Release&quot;"
 				EnableUAC="false"
 				ModuleDefinitionFile=".\CMSUpload.def"
 				GenerateDebugInformation="true"
@@ -134,6 +137,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="D:\dev\phpsdk\deps\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -157,8 +161,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
+				AdditionalDependencies="libcurl_imp.lib"
 				OutputFile="$(OutDir)\$(ProjectName).ocx"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;D:\dev\curl-7.23.1\lib\DLL-Release&quot;"
 				ModuleDefinitionFile=".\CMSUpload.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -215,6 +221,10 @@
 			</File>
 			<File
 				RelativePath=".\CMSUploadPropPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Common.cpp"
 				>
 			</File>
 			<File

@@ -132,6 +132,9 @@ BEGIN
     CONTROL         "¾²Ì¬",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | SS_SUNKEN | WS_GROUP,37,75,84,13
     PUSHBUTTON      "Button1",IDC_BUTTON1,185,85,50,14
     CONTROL         "",IDC_TREE1,"SysTreeView32",WS_BORDER | WS_HSCROLL | WS_TABSTOP,22,7,60,50
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,246,30,20,20
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,193,17,20,20
+    CONTROL         "",IDC_SCROLLBAR1,"{DFD181E0-5E2F-11CE-A449-00AA004A803D}",WS_TABSTOP,150,78,60,25
 END
 
 
@@ -160,6 +163,22 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_PROPPAGE_CMSUPLOAD DLGINIT
+BEGIN
+    IDC_SCROLLBAR1, 0x37a, 55, 0
+0x0000, 0x0000, 0x0023, 0x0000, 0x0001, 0x0000, 0x001b, 0x0000, 0x0001, 
+0x8001, 0x0000, 0x0000, 0x0000, 0x0003, 0x0000, 0x0002, 0x8001, 0x0001, 
+0x0000, 0x0000, 0x0c02, 0x0800, 0x0000, 0xda00, 0x000a, 0x8c00, 0x0004, 
+"\000" 
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
