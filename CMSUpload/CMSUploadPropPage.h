@@ -26,5 +26,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
+	afx_msg void OnTvnSelchangedTree1(NMHDR *pNMHDR, LRESULT *pResult);
 };
 

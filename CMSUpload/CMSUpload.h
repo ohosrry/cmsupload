@@ -8,7 +8,7 @@
 
 #include "resource.h"       // 主符号
 
-#define MB(T) ::MessageBoxW(NULL,T,T,MB_OK);
+
 // CCMSUploadApp : 有关实现的信息，请参阅 CMSUpload.cpp。
 
 class CCMSUploadApp : public COleControlModule

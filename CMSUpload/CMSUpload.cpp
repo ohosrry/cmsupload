@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "CMSUpload.h"
-
+#include <curl/curl.h>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -23,7 +23,8 @@ BOOL CCMSUploadApp::InitInstance()
 	BOOL bInit = COleControlModule::InitInstance();
 
 	if (bInit)
-	{
+	{ 
+			curl_global_init(CURL_GLOBAL_WIN32);
 		// TODO: 在此添加您自己的模块初始化代码。
 	}
 	return bInit;
@@ -36,6 +37,7 @@ BOOL CCMSUploadApp::InitInstance()
 int CCMSUploadApp::ExitInstance()
 {
 	// TODO: 在此添加您自己的模块终止代码。
+	curl_global_cleanup();
 	return COleControlModule::ExitInstance();
 }
 

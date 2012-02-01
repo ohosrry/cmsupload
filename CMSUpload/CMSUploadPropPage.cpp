@@ -17,6 +17,7 @@ IMPLEMENT_DYNCREATE(CCMSUploadPropPage, COlePropertyPage)
 
 BEGIN_MESSAGE_MAP(CCMSUploadPropPage, COlePropertyPage)
 	ON_WM_ACTIVATE()
+	ON_NOTIFY(TVN_SELCHANGED, IDC_TREE1, &CCMSUploadPropPage::OnTvnSelchangedTree1)
 END_MESSAGE_MAP()
 
 
@@ -67,4 +68,11 @@ void CCMSUploadPropPage::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimize
 	COlePropertyPage::OnActivate(nState, pWndOther, bMinimized);
 
 	// TODO: 在此处添加消息处理程序代码
+}
+
+void CCMSUploadPropPage::OnTvnSelchangedTree1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	*pResult = 0;
 }

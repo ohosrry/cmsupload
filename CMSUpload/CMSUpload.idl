@@ -42,6 +42,8 @@ library CMSUploadLib
 			[id(DISPID_KEYDOWN)] void KeyDown(SHORT* KeyCode, SHORT Shift);
 			[id(DISPID_DBLCLICK)] void DblClick(void);
 			[id(DISPID_MOUSEMOVE)] void MouseMove(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+			[id(DISPID_MOUSEDOWN)] void MouseDown(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+			[id(DISPID_CLICK)] void Click(void);
 	};
 
 	//  CCMSUploadCtrl 的类信息
