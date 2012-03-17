@@ -1,0 +1,72 @@
+// CMSInterface.idl : ActiveX 控件项目的类型库源。
+
+// 此文件将由 MIDL 编译器工具处理以
+// 产生类型库(CMSInterface.tlb)，该类型库将成为
+// CMSInterface.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+#include "CMSConstant.h"
+[ uuid(821AE153-D15E-4372-B430-A5BB99A588C3), version(1.0),
+  helpfile("CMSInterface.hlp"),
+  helpstring("CMSInterface ActiveX 控件模块"),
+  control ]
+library CMSInterfaceLib
+{
+	importlib(STDOLE_TLB);
+
+	//  CCMSInterfaceCtrl 的主调度接口
+
+	[ uuid(259F2DB9-9280-46E4-A1F4-7EC1405EBF71),
+	  helpstring("CMSInterface Control 的调度接口")]
+	dispinterface _DCMSInterface
+	{
+		properties:
+
+		methods:
+			[id(DISPID_DO_FTP_UPLOAD)] BSTR doFtpUpload( BSTR file_name,BSTR new_name, BSTR user,BSTR pwd,BSTR cb);
+			[id(DISPID_DO_HTTP_UPLOAD)] BSTR doHttpUpload( BSTR file_name,BSTR new_name,BSTR user,BSTR pwd,BSTR cb);
+			[id(DISPID_DO_OPEN_FILE_DIALOG)] BSTR doOpenDialog(BSTR path);
+			[id(DISPID_DO_GET_PATH_FILES)] BSTR doGetPathFiles(BSTR path);
+			[id(DISPID_DO_GET_DRIVE_FILES)] BSTR doGetDriveFiles();
+			//[id(DISPID_DO_REG_CALL_BACK)]void doRegCallBack(IDispatch* bstrFun)
+
+			[id(1), helpstring("注册JS回调")] BSTR RegCallBack(void);
+			[id(2), helpstring("注册回调")] BSTR registerCallBack(IDispatch* dispatch);
+			[id(3), helpstring("调用Javascript")] BSTR CallJs(BSTR function_name);
+	};
+
+	//  CCMSInterfaceCtrl 的事件调度接口
+
+	[ uuid(BF457155-D9A3-44D1-829B-D47D1E9F1E88),
+	  helpstring("CMSInterface Control 的事件接口") ]
+	dispinterface _DCMSInterfaceEvents
+	{
+		properties:
+			[id(1) , helpstring("属性 TBstr")] BSTR TBstr;
+			//  事件接口没有任何属性
+
+		methods:
+			[id(DISPID_CLICK)] void Click(void);
+			[id(DISPID_DBLCLICK)] void DblClick(void);
+			[id(DISPID_ERROREVENT)] void Error(SHORT Number, BSTR* Description, SCODE Scode, BSTR Source, BSTR HelpFile, LONG HelpContext, VARIANT_BOOL* CancelDisplay);
+			[id(DISPID_KEYDOWN)] void KeyDown(SHORT* KeyCode, SHORT Shift);
+			[id(DISPID_KEYPRESS)] void KeyPress(SHORT* KeyAscii);
+			[id(DISPID_KEYUP)] void KeyUp(SHORT* KeyCode, SHORT Shift);
+			[id(DISPID_MOUSEDOWN)] void MouseDown(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+			[id(DISPID_MOUSEMOVE)] void MouseMove(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+			[id(DISPID_MOUSEUP)] void MouseUp(SHORT Button, SHORT Shift, OLE_XPOS_PIXELS x, OLE_YPOS_PIXELS y);
+			[id(DISPID_READYSTATECHANGE)] void ReadyStateChange(void);
+	};
+
+	//  CCMSInterfaceCtrl 的类信息
+
+	[ uuid(C3F95086-97B7-47E7-95BD-EB3D6345B2D1), licensed,
+	  helpstring("CMSInterface Control"), control ]
+	coclass CMSInterface
+	{
+		[default] dispinterface _DCMSInterface;
+		[default, source] dispinterface _DCMSInterfaceEvents;
+	};
+
+};
