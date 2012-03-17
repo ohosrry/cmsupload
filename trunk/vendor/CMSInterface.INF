@@ -1,0 +1,12 @@
+[version] 
+; version signature (same for both NT and Win95) do not remove
+signature="$banggo$"
+AdvancedINF=2.0  
+[Add.Code]
+CMSInterface.ocx=CMSInterface.ocx
+[CMSInterface.ocx]
+file-win32-x86=CMSCab.CAB
+clsid={C3F95086-97B7-47E7-95BD-EB3D6345B2D1} 
+FileVersion=1,0,0,1 
+RegisterServer=yes  
+; end of INF file
