@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#ifndef BUFFERSIZE
+#define  BUFFERSIZE 16777216
+#endif
 #include "CMSInterfaceCtrl.h"
 #include <windows.h>
 #include "lib_cms.h"
@@ -17,6 +20,9 @@
 #include <cmath>
 #include <json/json.h>
 #include <json/writer.h>
+#include <cstdlib>
+#include "b64/encode.h"
+#include "b64/decode.h"
 #include <algorithm> // sort
 #ifndef LIB_CMS_H
 #error "must include lib_cms.h"
