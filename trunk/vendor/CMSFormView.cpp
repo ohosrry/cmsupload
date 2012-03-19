@@ -21,15 +21,16 @@ using namespace std;
 // CCMSFormView
 
 IMPLEMENT_DYNCREATE(CCMSFormView, CDialog)
-
+CCriticalSection CCMSFormView::m_Section;
 CCMSFormView::CCMSFormView()
-	: CDialog(CCMSFormView::IDD),m_Pic_Id(0),m_bDraging(FALSE),m_Pic_Up_Id(0)
+	: CDialog(CCMSFormView::IDD),m_Pic_Id(0),m_bDraging(FALSE),m_Pic_Up_Id(0),m_Check_Lock(FALSE)
 {
 
 }
 
 CCMSFormView::~CCMSFormView()
 {
+	
 	vector<CImage*>::iterator it=m_Image_Vector.begin();
 	for (;it!=m_Image_Vector.end();++it)
 	{
@@ -69,6 +70,8 @@ void CCMSFormView::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_DIR, m_Tree);
 	//}}AFX_DATA_MAP 
 	//UpdateData(TRUE);
+	DDX_Control(pDX, IDC_BUTTON_UP, m_Upload_Button);
+	DDX_Control(pDX, IDC_CHECK_ALL, m_Check_All);
 }
 
 void CCMSFormView::PostNcDestroy()
@@ -93,7 +96,8 @@ BEGIN_MESSAGE_MAP(CCMSFormView, CDialog)
 	ON_WM_LBUTTONUP()
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_PIC, &CCMSFormView::OnNMDblclkListPic)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_UP, &CCMSFormView::OnNMDblclkListUp)
-	ON_BN_CLICKED(IDC_BUTTON_UP, &CCMSFormView::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_CHECK_ALL, &CCMSFormView::OnBnClickedCheckAll)
+	ON_BN_CLICKED(IDC_BUTTON_UP, &CCMSFormView::OnBnClickedButtonUp)
 END_MESSAGE_MAP()
 
 
@@ -149,6 +153,7 @@ BOOL CCMSFormView::OnInitDialog(){
 	m_Image_List.Add(&bmp,RGB(255,0,255));
 	//m_Image_List.Create(IDB_FILE_VIEW_24,16,0,RGB(255,0,255));
 	m_List_Pic.SetExtendedStyle(m_List_Pic.GetExtendedStyle()|LVS_EX_GRIDLINES);
+    m_List_Up.SetExtendedStyle(m_List_Up.GetExtendedStyle()|LVS_EX_ONECLICKACTIVATE |LVS_EX_TWOCLICKACTIVATE );
 	//m_List_Up.SetExtendedStyle(m_List_Pic.GetExtendedStyle()|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_SUBITEMIMAGES);
 	CBitmap bitmap;
 	bitmap.LoadBitmap(IDB_BITMAP_HOME);
@@ -494,34 +499,134 @@ void CCMSFormView::OnNMDblclkListUp(NMHDR *pNMHDR, LRESULT *pResult)
 		//upload_Path+=L"up.jpg";
 		//CMSBOXW(upload_Path);
 		//return;
+		char base_name_buff[255]={0};
 		char *filename=basename(W2A(cs));
-		upload_Path+=A2W(filename);
-		CMSBOXW(upload_Path);
+		SYSTEMTIME systime;
+		::GetSystemTime(&systime);
+		CTime ct(systime);
+		CString destDir=ct.Format("%Y/%m/%d/");
+		memcpy(base_name_buff,filename,strlen(filename));
+		upload_Path+=destDir+A2W(base_name_buff);
+		//CMSBOXW(upload_Path);
+		//upload_Path+=L"up.jpg";
 		//return;
 		INT ret=_doFtpUpload(W2A(CCMSInterfaceCtrl::getInstance()->ftpUrl),W2A(cs.AllocSysString()),W2A(upload_Path.AllocSysString()));
 		if(ret==0)
 		{
-			//char *buff=new char[102400];
-		  //  ret=_doHttpGet(W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl),buff);
+			char *buff=new char[102400];
+		    ret=_doHttpGet(W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl),buff);
             if(ret==0)
 			{ 
-             //CMSBOXW(A2W(buff));
-			 LVITEM lv;
-			 lv.iItem=pNMItemActivate->iItem;
-			 //if(m_List_Up.GetItemCount()==1)
-			 //{
-			 //           m_List_Up.DeleteAllItems();
-			 //}
-			 m_List_Up.DeleteItem(m_List_Up.GetItem(&lv));
-
+               // CMSBOXW(A2W(buff));
+				//CMSBOXW(cs);
+				LVFINDINFO lvinfo={0};
+				lvinfo.psz=cs.AllocSysString();
+				INT fixItemIndex=m_List_Up.FindItem(&lvinfo);
+				//cs.Format(L"%d",fixItemIndex);
+				//CMSBOXW(cs);
+				if(fixItemIndex>=0){
+					m_List_Up.DeleteItem(fixItemIndex);
+				}
 			}
-			//SAFE_DELETE(buff);
+			SAFE_DELETE(buff);
 		}
 	}
 	*pResult = 0;
 }
 
-void CCMSFormView::OnBnClickedButton1()
+
+
+void CCMSFormView::OnBnClickedCheckAll()
 {
+
+	  INT i=0,count=m_List_Up.GetItemCount();
+      BOOL b_check=FALSE;
+	  for(;i<count;++i)
+	  {
+		LVITEMW lvw;
+		lvw.state=LVIS_SELECTED;
+		if(!m_Check_Lock){
+			m_List_Up.SetItemState(i,LVIS_SELECTED,LVIS_SELECTED);
+			b_check=TRUE;
+		}else{
+            m_List_Up.SetItemState(i,0,LVIS_SELECTED);
+		}
+	  }
+	  if(b_check){
+		  m_Check_Lock=TRUE;
+	  }else{
+		  m_Check_Lock=FALSE;
+	  }
+	  m_List_Up.SetFocus();
+
+}
+
+UINT CCMSFormView::UploadThread(LPVOID lp){
+	USES_CONVERSION;
+	ST_THREAD_PARAM *param=(ST_THREAD_PARAM*)lp;
+
+	if(NULL==param)
+	{
+		CMSBOX("wrong param");
+		return 1UL;
+	}
+	
+	char buf[255]={0};
+	CString ftpUrl=CCMSInterfaceCtrl::getInstance()->ftpUrl;
+	CString ftpUser=CCMSInterfaceCtrl::getInstance()->ftpUser;
+	CString ftpPwd=CCMSInterfaceCtrl::getInstance()->ftpPwd;
+	CString uploadDir=CCMSInterfaceCtrl::getInstance()->uploadDir;
+	SYSTEMTIME systime;
+	::GetSystemTime(&systime);
+	CTime ct(systime);
+	CString destDir=ct.Format("%Y/%m/%d/");
+    CString uploadName=uploadDir+destDir;
+	CCMSFormView * pMain=param->m_Main;
+	INT i=param->count;
+    char* file_name=W2A(pMain->m_List_Up.GetItemText(i,0));
+    strcpy_s(buf,255,file_name);
+    char *file_base_name=basename(buf);
+    if(NULL==file_base_name)
+	{
+		CMSBOX("no base name");
+	}
+	uploadName+=A2W(file_base_name);
+	//CMSBOXW(uploadName);
+	//return 0UL;
+	m_Section.Lock();
+    if(0==_doFtpUpload(W2A(ftpUrl.AllocSysString()),buf,W2A(uploadName.AllocSysString()),W2A(ftpUser.AllocSysString()),W2A(ftpPwd.AllocSysString())))
+	{
+	
+      //CString msg;
+	  //msg.Format(L"%s 上传成功",A2W(file_name));
+	 // CMSBOXW(msg);
+		LVFINDINFO lvinfo={0};
+	  lvinfo.psz=A2W(buf);
+	  INT fixItemIndex=pMain->m_List_Up.FindItem(&lvinfo);
+	  if(fixItemIndex>=0){
+		pMain->m_List_Up.DeleteItem(fixItemIndex);
+	  }
+	}
+	m_Section.Unlock();
+	//SAFE_DELETE(pMain);
+	SAFE_DELETE(param);
+	return 0UL;
+}
+
+
+void CCMSFormView::OnBnClickedButtonUp()
+{
+	char buff[64]={0};
+	INT i=0,count=m_List_Up.GetSelectedCount();
+    for(;i<count;++i)
+	{
+		ST_THREAD_PARAM* st_param=new ST_THREAD_PARAM();
+        st_param->m_Main=this;
+		st_param->count=i;
+		AfxBeginThread(&CCMSFormView::UploadThread,st_param,0,0,NULL,NULL);  
+		//return;
+	}
+ //   sprintf_s(buff,"%d",count);
+	//CMSBOX(buff);
 	// TODO: 在此添加控件通知处理程序代码
 }
