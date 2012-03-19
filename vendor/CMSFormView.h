@@ -1,9 +1,12 @@
 #include "Resource.h"
 #pragma once
-#include "afxcmn.h"
-#include<vector>
+#include <afxmt.h>
+#include <afxcmn.h>
+#include <vector>
 #include <atlimage.h>
+#include <afxwin.h>
 using namespace std;
+class CCMSFormView;
 struct ST_DRAG
 {
 	CImageList *m_image;
@@ -18,6 +21,11 @@ struct ST_DRAG
 	/*~ST_DRAG(){
 		SAFE_DELETE(m_image);
 	}*/
+};
+
+struct ST_THREAD_PARAM{
+CCMSFormView *m_Main;
+INT count;
 };
 
 // CCMSFormView ¥∞ÃÂ ”Õº
@@ -71,6 +79,10 @@ public:
 	CImageList m_Big_Drag;
 	INT m_Pic_Id;
 	INT m_Pic_Up_Id;
+	CButton m_Upload_Button;
+	CCheckListBox m_Check_All;
+    BOOL m_Check_Lock;
+	static CCriticalSection m_Section;
 	afx_msg void OnNMClickDir(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -83,6 +95,9 @@ public:
 	afx_msg void OnNMDblclkListPic(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMDblclkListUp(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedCheckAll();
+	static UINT _cdecl UploadThread(LPVOID lp);
+	afx_msg void OnBnClickedButtonUp();
 };
 
 

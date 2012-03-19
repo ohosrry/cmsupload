@@ -70,6 +70,7 @@ char* filepath(const char* file_name,char *path_buffer)
 	
 	memcpy(path_buffer,file_name,path_len);
 	//printf("%s\n",path_buffer);
+	//CMSBOX(path_buffer);
 	return path_buffer;
 }
 
@@ -186,7 +187,7 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	static char buf_usr_pwd[128]={0};
 	static char buf_mkdir[64]={0};
 	static char buf_type[64]={0};
-	static char new_file_path[128]={0};
+	static char new_file_path[255]={0};
 	//static char query_buffer[64]={0};
 	struct curl_slist *headerlist=NULL;
 	//struct curl_slist *mkdirlist=NULL;
