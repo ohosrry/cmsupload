@@ -3,6 +3,7 @@
 #include <afxmt.h>
 #include <afxcmn.h>
 #include <vector>
+#include <map>
 #include <atlimage.h>
 #include <afxwin.h>
 using namespace std;
@@ -83,6 +84,8 @@ public:
 	CCheckListBox m_Check_All;
     BOOL m_Check_Lock;
 	static CCriticalSection m_Section;
+	std::map<std::string,std::string> m_Up_Map;
+	vector<CWinThread*> m_Up_Thread;
 	afx_msg void OnNMClickDir(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnSize(UINT nType, int cx, int cy);

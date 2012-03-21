@@ -13,17 +13,23 @@
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/utime.h>
 #define HAVE_ICOVN
 #include "curl/curl.h"
 #include <vector>
 #include <map>
+#include <vector>
 #include <cmath>
 #include <json/json.h>
 #include <json/writer.h>
-#include <cstdlib>
-#include "b64/encode.h"
-#include "b64/decode.h"
+#include "md5.h"
+#include "B64.h"
 #include <algorithm> // sort
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+#include <sstream>
+#include <atlchecked.h>
 #ifndef LIB_CMS_H
 #error "must include lib_cms.h"
 #endif
@@ -245,8 +251,8 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	//query_curl=curl_easy_init();
 
 	if(new_file_base_name!=NULL){
-		sprintf_s(buf_1,"RNFR %s", file_base_name);
-		sprintf_s(buf_2,"RNTO %s", new_name);
+		//sprintf_s(buf_1,"RNFR %s", file_base_name);
+		//sprintf_s(buf_2,"RNTO %s", new_name);
 	}
 	sprintf_s(buf_3,"MODE S");
     sprintf_s(buf_type,"TYPE I");
@@ -285,10 +291,10 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	}*/
 	if(_stricmp(file_name,new_name)!=0)
 	{
-		headerlist = curl_slist_append(headerlist, buf_1);
-		headerlist = curl_slist_append(headerlist, buf_2);
+		//headerlist = curl_slist_append(headerlist, buf_1);
+		//headerlist = curl_slist_append(headerlist, buf_2);
 	}
-	headerlist = curl_slist_append(headerlist, buf_3);
+	//headerlist = curl_slist_append(headerlist, buf_3);
 	/* we want to use our own read function */
 	//curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
 	if(NULL!=user&&NULL!=pwd)
@@ -316,7 +322,7 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	//curl_easy_setopt(curl,CURLOPT_PREQUOTE,
 	//curl_easy_setopt(curl,CURLOPT_PREQUOTE,mkdirlist);
 	curl_easy_setopt(curl,CURLOPT_FTP_CREATE_MISSING_DIRS,1L);
-	curl_easy_setopt(curl, CURLOPT_POSTQUOTE, headerlist);
+	//curl_easy_setopt(curl, CURLOPT_POSTQUOTE, headerlist);
 	curl_easy_setopt(curl, CURLOPT_READDATA, hd_src);
 	curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,(curl_off_t)fsize);
 	
@@ -413,4 +419,158 @@ int _doHttpGet(const char* httpurl,char* result_buffer)
 		return 1;
 	}
 	return 0;
+}
+
+long rand_num(int min,int max)
+{
+	//static char time_buff[32]={0};
+	//char rand_buff[64]={0},*pend;
+	//DOUBLE ddrand;
+	//FILETIME ft;
+	//__int64 ff;
+	//timeval tv;
+	//GetSystemTimeAsFileTime(&ft);   /* 100 ns blocks since 01-Jan-1641 */
+	//ff = *(__int64*)(&ft);
+	//tv.tv_sec = (int)(ff/(__int64)10000000-(__int64)11644473600);
+	//tv.tv_usec = (int)(ff % 10000000)/10;
+	//sprintf_s(time_buff,32,"%.6f",tv.tv_usec/1000000.00);
+	//ddrand=strtod(time_buff,&pend);
+	//srand((UINT)ddrand);
+	srand((unsigned int)time(NULL));
+	long l= (double)rand() / (RAND_MAX + 1) * (max - min)+ min;
+	return l;
+}
+
+char * passport_encrypt(const char *text,const char *key,char *goutput,int *out_put_len)
+{
+    USES_CONVERSION;
+    long rd=rand_num(0,32000);
+	INT text_len,i,en_key_len,ctr=0,tmp_len=0,l_buff_len=0,key_len;
+	char tmp[1024]={0};
+	char output[1024]={0};
+	string str;
+	char buff[64]={0};
+	//_fcvt(rd,0,64,10);
+	sprintf_s(buff,64,"%ld",rd);
+	str+=buff;
+	MD5 md5(str);
+	string result = md5.md5();
+	//CMSBOX(result.c_str());
+	text_len=strlen(text);
+	en_key_len=result.size();
+	for(i=0;i<text_len;++i)
+	{
+		ctr=(ctr==en_key_len)?0:ctr;
+		char l_tmp[128]={0};
+		//tmp[i]=result[ctr]
+		sprintf_s(l_tmp,128,"%c%c",result[ctr],text[i]^result[ctr++]);
+		strcat_s(tmp,l_tmp);
+	}
+	tmp_len=strlen(tmp);
+	char l_buff[1024]={0};
+	char b[2048]={0};
+	//TCHAR tc[2048];
+
+    passport_key(tmp,key,l_buff,&key_len);
+	l_buff_len=strlen(l_buff);
+	//TCHAR *tc_conv=A2W(l_buff);
+	//wcscpy_s(tc,2048,tc_conv);
+	//INT tc_len=wcslen(tc);
+    
+	//CString cs;
+	//cs.Format("%s %d",l_buff,l_buff_len);
+	//sprintf_s(b,2048,"%s %d",l_buff,l_buff_len);
+	//CMSBOX(b);
+	//return NULL;
+	//CMSBOX(l_buff);
+	//vector<BYTE> in_str(l_buff,l_buff+l_buff_len);
+	//basic_string<TCHAR> res=base64Encode(in_str);
+	//en.encode(l_buff,l_buff_len,b);
+    //char * c_tmp=W2A(res.c_str());
+	base64encode(l_buff,l_buff_len,b,2048);
+	//CMSBOX(key);
+	//memcpy(b,c_tmp,2048);
+	//CMSBOX(b);
+	memcpy(goutput,b,1024);
+	return goutput;
+}
+char * passport_decrypt(const char *text,const char *key,char *goutput,int *out_put_len)
+{
+	//$txt = passport_key(base64_decode($txt), $key);
+	//$tmp = '';
+	//for($i = 0;$i < strlen($txt); $i++) {
+	//	$md5 = $txt[$i];
+	//	$tmp .= $txt[++$i] ^ $md5;
+	//}
+	//return $tmp;
+	USES_CONVERSION;
+	basic_stringstream<BYTE> ss;
+    stringstream ss1;
+	int text_len=0,i=0,buff_len=0,key_len;
+	char buff[1024]={0};
+	char key_buff[1024]={0};
+	char tmp[1024]={0},c_tmp=0;
+
+	basic_string<TCHAR> de_str(A2W(text));
+	text_len=strlen(text);
+	//vector<BYTE> de_str(text,text+text_len);
+    vector<BYTE> res_vec=base64Decode(de_str);
+	vector<BYTE>::iterator it=res_vec.begin();
+	int j=0;
+	while(it!=res_vec.end())
+	{
+       buff[j++]=*it;
+       ++it;
+	}
+	//CMSBOX(buff);
+	//copy(res_vec.begin(),res_vec.end(),ostream_iterator<basic_string<BYTE> >(ss1));
+   // base64decode(text,text_len,buff,1024);
+    passport_key(buff,key,key_buff,&key_len);
+	//CMSBOX(key_buff);
+	buff_len=strlen(key_buff);
+	//char b[64]={0};
+    //sprintf_s(b,64,"%s %d %d %d",key_buff,buff_len,res_vec.size(),key_len);
+    //CMSBOX(b);
+	j=0;
+    for(i=0;i<key_len;++i,++j)
+	{
+        c_tmp=key_buff[i];
+		tmp[j]=key_buff[++i]^c_tmp;
+	}
+	//CMSBOX(tmp);
+    memcpy(goutput,tmp,1024);
+	return goutput;
+}
+char * passport_key(const char *text,const char *key,char *goutput,int *out_put_len)
+{
+    char tmp[1024]={0};
+	int ctr=0,i,text_len,en_key_len,tmp_len=0;
+	string str(key);
+	MD5 md5(str);
+	string result=md5.md5();
+    text_len=strlen(text);
+	en_key_len=result.size();
+	for(i=0;i<text_len;++i)
+	{
+		ctr=(ctr==en_key_len)?0:ctr;
+		//char l_tmp[128]={0};
+		//tmp[i]=result[ctr]
+		//sprintf_s(l_tmp,128,"%c",text[i]^result[ctr++]);
+		//strcat_s(tmp,l_tmp);
+		tmp[i]=text[i]^result[ctr++];
+	}
+	memcpy(goutput,tmp,1024);
+	//CMSBOX(text);
+	//CMSBOX(result.c_str());
+	// CMSBOX(tmp);
+     tmp_len=strlen(tmp);
+	 *out_put_len=text_len;
+	 //int g_len=strlen(goutput);
+	 //char tp[64]={0}; 
+    // sprintf_s(tp,64,"%d %d %d",tmp_len,text_len,g_len);
+     //CMSBOX(tp);
+	//strcpy_s(goutput,tmp_len,tmp);
+	//CMSBOX(goutput);
+
+	return goutput;
 }

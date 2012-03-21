@@ -11,6 +11,8 @@
 #include "json/reader.h"
 #include "CMSInterfaceCtrl.h"
 #include <atlimage.h>
+#include <algorithm>
+#include <functional>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -19,13 +21,19 @@ static char THIS_FILE[] = __FILE__;
 using namespace Json;
 using namespace std;
 // CCMSFormView
-
+char *getBaseName(const char* file,char *out_buff);
 IMPLEMENT_DYNCREATE(CCMSFormView, CDialog)
 CCriticalSection CCMSFormView::m_Section;
 CCMSFormView::CCMSFormView()
 	: CDialog(CCMSFormView::IDD),m_Pic_Id(0),m_bDraging(FALSE),m_Pic_Up_Id(0),m_Check_Lock(FALSE)
 {
-
+	//char buff[1024]={0};
+	//char buff_decrypt[1024]={0};
+	//int b_len,d_len;
+ //passport_encrypt("mima123456","mbcms123456789",buff,&b_len);
+ // passport_decrypt("B2sDPQtnVTRUYQYyAzFTNFFlXWFQZVc/D2U=","mbcms123456789",buff_decrypt,&d_len);
+ //CMSBOX(buff);
+ // CMSBOX(buff_decrypt);
 }
 
 CCMSFormView::~CCMSFormView()
@@ -133,9 +141,9 @@ void CCMSFormView::OnNMClickDir(NMHDR *pNMHDR, LRESULT *pResult)
 BOOL CCMSFormView::OnInitDialog(){
 		USES_CONVERSION;
 	CDialog::OnInitDialog();
-	m_brush.CreateSolidBrush(RGB(0,0,0));
-	m_List_Pic.SetBkColor(RGB(0,0,0));
-	m_List_Up.SetBkColor(RGB(0,0,0));
+	m_brush.CreateSolidBrush(RGB(0xFa,0xFa,0xFa));
+	m_List_Pic.SetBkColor(RGB(0xFa,0xFa,0xFa));
+	m_List_Up.SetBkColor(RGB(0xFa,0xFa,0xFa));
 	//m_Tree.SetBkColor(RGB(0,0,0));
 	CString cs=CCMSUtils::doGetDriveFiles();
 	CBitmap bmp;
@@ -281,7 +289,10 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 			   }
 		   }
 	   }
+   }else{
+	   m_List_Pic.DeleteAllItems();
    }
+
 	*pResult = 0;
 }
 
@@ -499,6 +510,9 @@ void CCMSFormView::OnNMDblclkListUp(NMHDR *pNMHDR, LRESULT *pResult)
 		//upload_Path+=L"up.jpg";
 		//CMSBOXW(upload_Path);
 		//return;
+		CString ftpUrl=CCMSInterfaceCtrl::getInstance()->ftpUrl;
+		CString ftpUser=CCMSInterfaceCtrl::getInstance()->ftpUser;
+		CString ftpPwd=CCMSInterfaceCtrl::getInstance()->ftpPwd;
 		char base_name_buff[255]={0};
 		char *filename=basename(W2A(cs));
 		SYSTEMTIME systime;
@@ -507,25 +521,42 @@ void CCMSFormView::OnNMDblclkListUp(NMHDR *pNMHDR, LRESULT *pResult)
 		CString destDir=ct.Format("%Y/%m/%d/");
 		memcpy(base_name_buff,filename,strlen(filename));
 		upload_Path+=destDir+A2W(base_name_buff);
+		
 		//CMSBOXW(upload_Path);
 		//upload_Path+=L"up.jpg";
 		//return;
-		INT ret=_doFtpUpload(W2A(CCMSInterfaceCtrl::getInstance()->ftpUrl),W2A(cs.AllocSysString()),W2A(upload_Path.AllocSysString()));
+		//CMSBOXW(ftpUser);
+		INT ret=_doFtpUpload(W2A(ftpUrl.AllocSysString()),
+			W2A(cs.AllocSysString()),
+			W2A(upload_Path.AllocSysString()),
+			W2A(ftpUser.AllocSysString()),
+			W2A(ftpPwd.AllocSysString())
+			);
 		if(ret==0)
 		{
 			char *buff=new char[102400];
-		    ret=_doHttpGet(W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl),buff);
+			//Value root;
+			Value values;
+			FastWriter fw;
+			char tmp[255]={0};
+			//sprintf_s(tmp,32,"1");
+			getBaseName(W2A(cs.AllocSysString()),tmp);
+			values[tmp]=W2A(upload_Path.AllocSysString());
+			//root["uploaded_files"]=values;
+			string param=fw.write(values);
+			string callBackUrl=W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl);
+            callBackUrl.append("?files="+param);
+		    ret=_doHttpGet(callBackUrl.c_str(),buff);
             if(ret==0)
 			{ 
-               // CMSBOXW(A2W(buff));
+                //CMSBOXW(A2W(buff));
 				//CMSBOXW(cs);
 				LVFINDINFO lvinfo={0};
 				lvinfo.psz=cs.AllocSysString();
 				INT fixItemIndex=m_List_Up.FindItem(&lvinfo);
-				//cs.Format(L"%d",fixItemIndex);
-				//CMSBOXW(cs);
 				if(fixItemIndex>=0){
 					m_List_Up.DeleteItem(fixItemIndex);
+
 				}
 			}
 			SAFE_DELETE(buff);
@@ -560,7 +591,31 @@ void CCMSFormView::OnBnClickedCheckAll()
 	  m_List_Up.SetFocus();
 
 }
+char *getBaseName(const char* file,char *out_buff){
 
+    size_t last_slash_pos,last_dot_pos;
+	string str(file);
+	string base_name;
+	last_dot_pos=str.find('.');
+    last_slash_pos=str.find_last_of('\\');
+    if(last_slash_pos==-1)
+	{
+
+		last_slash_pos=str.find_last_of('/');
+	}
+	char t[64]={0};
+	//sprintf_s(t,64,"last_slash_pos=%d last_dot_pos-last_slash_pos=%d",last_slash_pos,last_dot_pos-last_slash_pos);
+	//CMSBOX(t);
+	if(last_dot_pos==-1)
+	{
+      base_name= str.substr(last_slash_pos+1,str.size()-last_slash_pos-1);
+	}else{
+	  base_name= str.substr(last_slash_pos+1,last_dot_pos-last_slash_pos-1);
+	}
+   // base_name.copy(out_buff,base_name.size());
+	strcpy_s(out_buff,255,base_name.c_str());
+	return out_buff;
+}
 UINT CCMSFormView::UploadThread(LPVOID lp){
 	USES_CONVERSION;
 	ST_THREAD_PARAM *param=(ST_THREAD_PARAM*)lp;
@@ -600,12 +655,49 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
       //CString msg;
 	  //msg.Format(L"%s 上传成功",A2W(file_name));
 	 // CMSBOXW(msg);
-		LVFINDINFO lvinfo={0};
+	  LVFINDINFO lvinfo={0};
 	  lvinfo.psz=A2W(buf);
 	  INT fixItemIndex=pMain->m_List_Up.FindItem(&lvinfo);
 	  if(fixItemIndex>=0){
 		pMain->m_List_Up.DeleteItem(fixItemIndex);
 	  }
+	  char base_name[255]={0};
+	  getBaseName(buf,base_name);
+      pMain->m_Up_Map[base_name]=buf;
+	  CWinThread *theThread=AfxGetThread();
+	  vector<CWinThread*>::iterator it;
+	  it=find(pMain->m_Up_Thread.begin(),pMain->m_Up_Thread.end(),theThread);
+	  if(it!=pMain->m_Up_Thread.end())
+	  {
+		pMain->m_Up_Thread.erase(it);
+	  }
+	  CString css;
+	  css.Format(L"%d",pMain->m_Up_Thread.size());
+	  size_t size=pMain->m_Up_Thread.size();
+	  if(size==0)
+	  {
+		  Value values;
+		  FastWriter fw;
+		  map<string,string>::iterator it=pMain->m_Up_Map.begin();
+		  while(it!=pMain->m_Up_Map.end())
+		  {
+		    values[it->first.c_str()]=it->second.c_str();
+            ++it;
+		  }
+
+		  string upload_url=W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl);
+		  string param=fw.write(values);
+		  upload_url.append("?files="+param);
+		  char *http_buff=new char[102400];
+		  INT ret=_doHttpGet(upload_url.c_str(),http_buff);
+		  if(ret==0)
+		  {
+			 // CMSBOX(http_buff);
+		  }
+          SAFE_DELETE(http_buff);
+	  }
+	//  CMSBOXW(css);
+
 	}
 	m_Section.Unlock();
 	//SAFE_DELETE(pMain);
@@ -623,7 +715,8 @@ void CCMSFormView::OnBnClickedButtonUp()
 		ST_THREAD_PARAM* st_param=new ST_THREAD_PARAM();
         st_param->m_Main=this;
 		st_param->count=i;
-		AfxBeginThread(&CCMSFormView::UploadThread,st_param,0,0,NULL,NULL);  
+		CWinThread* theThread=AfxBeginThread(&CCMSFormView::UploadThread,st_param,0,0,NULL,NULL);  
+        m_Up_Thread.push_back(theThread);
 		//return;
 	}
  //   sprintf_s(buff,"%d",count);
