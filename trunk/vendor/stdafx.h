@@ -49,3 +49,4 @@ typedef unsigned __int64 uint64_t;
 	p=NULL;\
 }
 class CCMSInterfaceCtrl;
+void ErrorExit(LPTSTR lpszFunction);

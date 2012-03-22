@@ -13,6 +13,8 @@
 #include <atlimage.h>
 #include <algorithm>
 #include <functional>
+#include "CPreview.h"
+#include "CTools.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -66,7 +68,12 @@ CCMSFormView::~CCMSFormView()
 		}
 		++it_pic;
 	}
-  
+	map<string,string*>::iterator it_map=m_Tree_Map.begin();
+	while(it_map!=m_Tree_Map.end())
+	{
+		SAFE_DELETE(it_map->second);
+		++it_map;
+	}
 }
 
 void CCMSFormView::DoDataExchange(CDataExchange* pDX)
@@ -79,7 +86,7 @@ void CCMSFormView::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP 
 	//UpdateData(TRUE);
 	DDX_Control(pDX, IDC_BUTTON_UP, m_Upload_Button);
-	DDX_Control(pDX, IDC_CHECK_ALL, m_Check_All);
+	//DDX_Control(pDX, IDC_CHECK_ALL, m_Check_All);
 }
 
 void CCMSFormView::PostNcDestroy()
@@ -106,6 +113,12 @@ BEGIN_MESSAGE_MAP(CCMSFormView, CDialog)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_UP, &CCMSFormView::OnNMDblclkListUp)
 	ON_BN_CLICKED(IDC_CHECK_ALL, &CCMSFormView::OnBnClickedCheckAll)
 	ON_BN_CLICKED(IDC_BUTTON_UP, &CCMSFormView::OnBnClickedButtonUp)
+	ON_WM_MBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_CONTEXTMENU()
+	ON_COMMAND(ID_PREVIEW,&CCMSFormView::OnPreview)
+	ON_NOTIFY(NM_RCLICK, IDC_LIST_UP, &CCMSFormView::OnNMRClickListUp)
+	ON_NOTIFY(NM_RCLICK, IDC_LIST_PIC, &CCMSFormView::OnNMRClickListPic)
 END_MESSAGE_MAP()
 
 
@@ -141,6 +154,8 @@ void CCMSFormView::OnNMClickDir(NMHDR *pNMHDR, LRESULT *pResult)
 BOOL CCMSFormView::OnInitDialog(){
 		USES_CONVERSION;
 	CDialog::OnInitDialog();
+	m_Menu.LoadMenu(IDR_MENU);
+	//m_Menu.CreateMenu();
 	m_brush.CreateSolidBrush(RGB(0xFa,0xFa,0xFa));
 	m_List_Pic.SetBkColor(RGB(0xFa,0xFa,0xFa));
 	m_List_Up.SetBkColor(RGB(0xFa,0xFa,0xFa));
@@ -161,10 +176,10 @@ BOOL CCMSFormView::OnInitDialog(){
 	m_Image_List.Add(&bmp,RGB(255,0,255));
 	//m_Image_List.Create(IDB_FILE_VIEW_24,16,0,RGB(255,0,255));
 	m_List_Pic.SetExtendedStyle(m_List_Pic.GetExtendedStyle()|LVS_EX_GRIDLINES);
-    m_List_Up.SetExtendedStyle(m_List_Up.GetExtendedStyle()|LVS_EX_ONECLICKACTIVATE |LVS_EX_TWOCLICKACTIVATE );
+    //m_List_Up.SetExtendedStyle(m_List_Up.GetExtendedStyle()|LVS_EX_ONECLICKACTIVATE |LVS_EX_TWOCLICKACTIVATE );
 	//m_List_Up.SetExtendedStyle(m_List_Pic.GetExtendedStyle()|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_SUBITEMIMAGES);
 	CBitmap bitmap;
-	bitmap.LoadBitmap(IDB_BITMAP_HOME);
+	//bitmap.LoadBitmap(IDB_BITMAP_HOME);
 	m_Tree.SetImageList(&m_Image_List,TVSIL_NORMAL);
 	Reader fr;
 	Value paths;
@@ -177,14 +192,35 @@ BOOL CCMSFormView::OnInitDialog(){
 			Value::iterator it=paths.begin();
 			while(it!=paths.end())
 			{
-				HTREEITEM l_root=m_Tree.InsertItem(A2W(it.memberName()),root);
+				HTREEITEM l_root;
+				if(strcmp(it.memberName(),"images")!=0&&strncmp(it.memberName(),".",1)!=0)
+				{  
+					char base_buff[255]={0};
+				    getBaseName(it.memberName(),base_buff);
+                    string l_s(base_buff);
+                    string *node_str=new string(it.memberName());
+					l_root=m_Tree.InsertItem(A2W(it.memberName()),root);
+				    m_Tree.SetItemData(l_root,(DWORD_PTR)node_str);
+					m_Tree_Map[it.memberName()]=node_str;
+
+				}else{
+					it++;
+					continue;
+				}
 				if((*it).isObject()&&(*it).size()>0){
 					Value::iterator l_it=(*it).begin();
 					for (;l_it!=(*it).end();++l_it)
 					{
-						if((*l_it).isString()){
-							HTREEITEM lroot=m_Tree.InsertItem(A2W((*l_it).asCString()),0,0,l_root);
-							
+						if((*l_it).isString()&&strncmp((*l_it).asCString(),".",1)!=0){
+							char base_buff[255]={0};
+							getBaseName((*l_it).asCString(),base_buff);
+							string l_s(base_buff);
+							string *node_str=new string((*l_it).asCString());
+							//l_root=m_Tree.InsertItem(A2W(l_s.c_str()),root);
+							HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,l_root);
+							m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
+							m_Tree_Map[it.memberName()]=node_str;
+
 						}
 					}
 				}
@@ -203,26 +239,48 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 	Value paths;
 	FastWriter fw;
  	HTREEITEM root=m_Tree.GetSelectedItem();
-	cs= CCMSUtils::doGetPathFiles(m_Tree.GetItemText(root).AllocSysString());
+	string *p=(string*)m_Tree.GetItemData(root);
+	if(NULL==p)
+	{
+		return;
+	}
+	cs= CCMSUtils::doGetPathFiles(A2W(p->c_str()));
+    //cs.Replace(L'\\','/');
+
    if(fr.parse(W2A(cs),paths))
    {
 	   if(paths.isObject()&&paths.size()>0)
 	   {
+		 
 		   if(m_Tree.ItemHasChildren(root))
 		   {
-		     return;
+		     //return;
 		   }
 		   Value::iterator it=paths.begin();
 		   for(;it!=paths.end();++it)
 		   {
               if((*it).isString())
 			  {
-				 m_Tree.InsertItem(A2W((*it).asCString()),0,0,root);
+				  TVITEM tv={0};
+				  tv.pszText=A2W((*it).asCString());
+				 if(!m_Tree.GetItem(&tv)&&strncmp((*it).asCString(),".",1)!=0)
+				 {
+					 char base_buff[255]={0};
+					 getBaseName((*it).asCString(),base_buff);
+					 string l_s(base_buff);
+					 string *node_str=new string((*it).asCString());
+					 HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,root);
+					 m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
+					 m_Tree_Map[it.memberName()]=node_str;
+				 }
 			  }
-               
-		   
 		   }
 	   }
+	   //if(paths.isMember("images"))
+	   //{
+    //     
+	   //}
+	   // CMSBOXW(cs);
 	   if(paths.isMember("images")&&paths["images"].isObject()&&paths["images"].size()>0)
 	   {
 		   m_List_Pic.DeleteAllItems();
@@ -288,9 +346,11 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 				  }
 			   }
 		   }
+	   }else{
+         m_List_Pic.DeleteAllItems();
 	   }
    }else{
-	   m_List_Pic.DeleteAllItems();
+	  // m_List_Pic.DeleteAllItems();
    }
 
 	*pResult = 0;
@@ -427,6 +487,8 @@ void CCMSFormView::OnLButtonUp(UINT nFlags, CPoint point)
 		res=m_List_Pic.HitTest(&lvHitInfo);
 		CRect rect;
 		m_List_Up.GetWindowRect(&rect);
+		ClientToScreen(&rect);
+		ClientToScreen(&point);
 		if(rect.PtInRect(point))
 		{
 				m_List_Up.SetImageList(&m_Image_Pic,LVSIL_NORMAL);
@@ -501,67 +563,76 @@ void CCMSFormView::OnNMDblclkListUp(NMHDR *pNMHDR, LRESULT *pResult)
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	CString cs;
 	cs=m_List_Up.GetItemText(pNMItemActivate->iItem,0);
-    if(!cs.IsEmpty()&&_file_exists(W2A(cs))==0)
+	LVFINDINFO lvfind={0};
+	lvfind.psz=cs.AllocSysString();
+	INT find_index=m_List_Up.FindItem(&lvfind);
+	if(find_index>=0)
 	{
-        
-		CString upload_Path=CCMSInterfaceCtrl::getInstance()->uploadDir;
-		//CFile cf(cs,CFile::modeRead);
-  //      upload_Path+=L"/"+cf.GetFileName();
-		//upload_Path+=L"up.jpg";
-		//CMSBOXW(upload_Path);
-		//return;
-		CString ftpUrl=CCMSInterfaceCtrl::getInstance()->ftpUrl;
-		CString ftpUser=CCMSInterfaceCtrl::getInstance()->ftpUser;
-		CString ftpPwd=CCMSInterfaceCtrl::getInstance()->ftpPwd;
-		char base_name_buff[255]={0};
-		char *filename=basename(W2A(cs));
-		SYSTEMTIME systime;
-		::GetSystemTime(&systime);
-		CTime ct(systime);
-		CString destDir=ct.Format("%Y/%m/%d/");
-		memcpy(base_name_buff,filename,strlen(filename));
-		upload_Path+=destDir+A2W(base_name_buff);
-		
-		//CMSBOXW(upload_Path);
-		//upload_Path+=L"up.jpg";
-		//return;
-		//CMSBOXW(ftpUser);
-		INT ret=_doFtpUpload(W2A(ftpUrl.AllocSysString()),
-			W2A(cs.AllocSysString()),
-			W2A(upload_Path.AllocSysString()),
-			W2A(ftpUser.AllocSysString()),
-			W2A(ftpPwd.AllocSysString())
-			);
-		if(ret==0)
-		{
-			char *buff=new char[102400];
-			//Value root;
-			Value values;
-			FastWriter fw;
-			char tmp[255]={0};
-			//sprintf_s(tmp,32,"1");
-			getBaseName(W2A(cs.AllocSysString()),tmp);
-			values[tmp]=W2A(upload_Path.AllocSysString());
-			//root["uploaded_files"]=values;
-			string param=fw.write(values);
-			string callBackUrl=W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl);
-            callBackUrl.append("?files="+param);
-		    ret=_doHttpGet(callBackUrl.c_str(),buff);
-            if(ret==0)
-			{ 
-                //CMSBOXW(A2W(buff));
-				//CMSBOXW(cs);
-				LVFINDINFO lvinfo={0};
-				lvinfo.psz=cs.AllocSysString();
-				INT fixItemIndex=m_List_Up.FindItem(&lvinfo);
-				if(fixItemIndex>=0){
-					m_List_Up.DeleteItem(fixItemIndex);
-
-				}
-			}
-			SAFE_DELETE(buff);
-		}
+       m_List_Up.DeleteItem(find_index);
 	}
+    
+
+ //   if(!cs.IsEmpty()&&_file_exists(W2A(cs))==0)
+	//{
+ //       
+	//	CString upload_Path=CCMSInterfaceCtrl::getInstance()->uploadDir;
+	//	CFile cf(cs,CFile::modeRead);
+ //       upload_Path+=L"/"+cf.GetFileName();
+	//	upload_Path+=L"up.jpg";
+	//	CMSBOXW(upload_Path);
+	//	return;
+	//	CString ftpUrl=CCMSInterfaceCtrl::getInstance()->ftpUrl;
+	//	CString ftpUser=CCMSInterfaceCtrl::getInstance()->ftpUser;
+	//	CString ftpPwd=CCMSInterfaceCtrl::getInstance()->ftpPwd;
+	//	char base_name_buff[255]={0};
+	//	char *filename=basename(W2A(cs));
+	//	SYSTEMTIME systime;
+	//	::GetSystemTime(&systime);
+	//	CTime ct(systime);
+	//	CString destDir=ct.Format("%Y/%m/%d/");
+	//	memcpy(base_name_buff,filename,strlen(filename));
+	//	upload_Path+=destDir+A2W(base_name_buff);
+	//	
+	//	CMSBOXW(upload_Path);
+	//	upload_Path+=L"up.jpg";
+	//	return;
+	//	CMSBOXW(ftpUser);
+	//	INT ret=_doFtpUpload(W2A(ftpUrl.AllocSysString()),
+	//		W2A(cs.AllocSysString()),
+	//		W2A(upload_Path.AllocSysString()),
+	//		W2A(ftpUser.AllocSysString()),
+	//		W2A(ftpPwd.AllocSysString())
+	//		);
+	//	if(ret==0)
+	//	{
+	//		char *buff=new char[102400];
+	//		Value root;
+	//		Value values;
+	//		FastWriter fw;
+	//		char tmp[255]={0};
+	//		sprintf_s(tmp,32,"1");
+	//		getBaseName(W2A(cs.AllocSysString()),tmp);
+	//		values[tmp]=W2A(upload_Path.AllocSysString());
+	//		root["uploaded_files"]=values;
+	//		string param=fw.write(values);
+	//		string callBackUrl=W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl);
+ //           callBackUrl.append("?files="+param);
+	//	    ret=_doHttpGet(callBackUrl.c_str(),buff);
+ //           if(ret==0)
+	//		{ 
+ //               CMSBOXW(A2W(buff));
+	//			CMSBOXW(cs);
+	//			LVFINDINFO lvinfo={0};
+	//			lvinfo.psz=cs.AllocSysString();
+	//			INT fixItemIndex=m_List_Up.FindItem(&lvinfo);
+	//			if(fixItemIndex>=0){
+	//				m_List_Up.DeleteItem(fixItemIndex);
+
+	//			}
+	//		}
+	//		SAFE_DELETE(buff);
+	//	}
+	//}
 	*pResult = 0;
 }
 
@@ -613,6 +684,7 @@ char *getBaseName(const char* file,char *out_buff){
 	  base_name= str.substr(last_slash_pos+1,last_dot_pos-last_slash_pos-1);
 	}
    // base_name.copy(out_buff,base_name.size());
+	//CMSBOX(base_name.c_str());
 	strcpy_s(out_buff,255,base_name.c_str());
 	return out_buff;
 }
@@ -674,20 +746,23 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
 	  CString css;
 	  css.Format(L"%d",pMain->m_Up_Thread.size());
 	  size_t size=pMain->m_Up_Thread.size();
-	  if(size==0)
-	  {
+	  //if(size==0)
+	//  {
 		  Value values;
 		  FastWriter fw;
-		  map<string,string>::iterator it=pMain->m_Up_Map.begin();
-		  while(it!=pMain->m_Up_Map.end())
-		  {
-		    values[it->first.c_str()]=it->second.c_str();
-            ++it;
-		  }
-
+		  //map<string,string>::iterator it=pMain->m_Up_Map.begin();
+		  //while(it!=pMain->m_Up_Map.end())
+		  //{
+		  //  values[it->first.c_str()]=it->second.c_str();
+    //        ++it;
+		  //}
+		  values[base_name]=W2A(uploadName.AllocSysString());
 		  string upload_url=W2A(CCMSInterfaceCtrl::getInstance()->callBackUrl);
 		  string param=fw.write(values);
+		  //param.replace('\\','/');
+		  param=ctool::URLEncode(param);
 		  upload_url.append("?files="+param);
+		  //CMSBOX(upload_url.c_str());
 		  char *http_buff=new char[102400];
 		  INT ret=_doHttpGet(upload_url.c_str(),http_buff);
 		  if(ret==0)
@@ -695,7 +770,7 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
 			 // CMSBOX(http_buff);
 		  }
           SAFE_DELETE(http_buff);
-	  }
+	 // }
 	//  CMSBOXW(css);
 
 	}
@@ -710,6 +785,12 @@ void CCMSFormView::OnBnClickedButtonUp()
 {
 	char buff[64]={0};
 	INT i=0,count=m_List_Up.GetSelectedCount();
+	if(count==0)
+	{
+		//CString ccs(NO_FILE_SELECT);
+		
+		::MessageBox(NULL,L"没有选择文件",L"没有选择文件",MB_OK);
+	}
     for(;i<count;++i)
 	{
 		ST_THREAD_PARAM* st_param=new ST_THREAD_PARAM();
@@ -722,4 +803,104 @@ void CCMSFormView::OnBnClickedButtonUp()
  //   sprintf_s(buff,"%d",count);
 	//CMSBOX(buff);
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CCMSFormView::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+    if(MK_RBUTTON==nFlags)
+	{
+     m_Menu.TrackPopupMenu(nFlags,point.x,point.y,this);
+
+	}
+	CDialog::OnMButtonDown(nFlags, point);
+}
+
+void CCMSFormView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	if(MK_RBUTTON==nFlags)
+	{
+		//m_Menu.TrackPopupMenu(TPM_CENTERALIGN,point.x,point.y,this);
+       CMenu * l_menu=m_Menu.GetSubMenu(0);
+	  // CString cs;
+	  // cs.Format(L"%d",m_Menu.GetMenuItemCount());
+	  // CMSBOXW(cs);
+        CRect cr;
+	    GetWindowRect(&cr);
+		//ClientToScreen(&point);
+		 CString cs;
+		 cs.Format(L"%d %d %d %d",cr.left,cr.right,cr.top,cr.bottom);
+		 //CMSBOXW(cs);
+	   if(l_menu){
+		l_menu->TrackPopupMenu(TPM_LEFTALIGN|TPM_RIGHTBUTTON,point.x+cr.left,cr.top+point.y,this);
+	   }
+	   
+	}
+	CDialog::OnRButtonDown(nFlags, point);
+}
+
+void CCMSFormView::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+
+	//CMSBOX("HERE");
+	// TODO: 在此处添加消息处理程序代码
+}
+
+void CCMSFormView::OnPreview(){
+    // INT count=m_List_Pic.GetSelectedCount();
+    BOOL b_next=TRUE;
+	POSITION pos=m_List_Pic.GetFirstSelectedItemPosition();
+    CString cs;
+   while(pos)
+   {
+    
+      INT next_index=m_List_Pic.GetNextSelectedItem(pos);
+      if(next_index!=-1)
+	  {
+         cs=m_List_Pic.GetItemText(next_index,0);
+	  }
+   }
+   pos=m_List_Up.GetFirstSelectedItemPosition();
+   while(pos)
+   {
+     INT next_index=m_List_Up.GetNextSelectedItem(pos);
+	 if(next_index!=-1)
+	 {
+		 cs=m_List_Up.GetItemText(next_index,0);
+	 }
+   }
+    if(cs!=L"")
+	{
+		CCPreview cpv;
+		cpv.m_Pic_Path=cs;
+		//CMSBOXW(cs);
+		cpv.DoModal();
+	}
+
+	
+
+}
+void CCMSFormView::OnNMRClickListUp(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	CPoint cp;
+	GetCursorPos(&cp);
+	//ClientToScreen(&cp);
+	ScreenToClient(&cp);
+	OnRButtonDown(MK_RBUTTON,cp);
+	*pResult = 0;
+}
+
+void CCMSFormView::OnNMRClickListPic(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	CPoint cp;
+	GetCursorPos(&cp);
+	//ClientToScreen(&cp);
+	ScreenToClient(&cp);
+	OnRButtonDown(MK_RBUTTON,cp);
+	*pResult = 0;
 }

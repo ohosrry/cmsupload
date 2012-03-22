@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,2
- PRODUCTVERSION 1,0,0,2
+ FILEVERSION 1,0,0,4
+ PRODUCTVERSION 1,0,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -77,13 +77,13 @@ BEGIN
         BEGIN
             VALUE "Comments", "邦购CMS异步上传浏览器插件"
             VALUE "CompanyName", "邦购信息科技有限公司"
-            VALUE "FileDescription", "第一个版本"
-            VALUE "FileVersion", "1.0.0.2"
+            VALUE "FileDescription", "第三个版本"
+            VALUE "FileVersion", "1.0.0.4"
             VALUE "InternalName", "CMSInterface.ocx"
             VALUE "LegalCopyright", "邦购信息科技有限公司,版权所有"
             VALUE "OriginalFilename", "CMSInterface.ocx"
             VALUE "ProductName", "邦购上传"
-            VALUE "ProductVersion", "1.0.0.2"
+            VALUE "ProductVersion", "1.0.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -101,7 +101,6 @@ END
 IDB_CMSINTERFACE        BITMAP                  "CMSInterfaceCtrl.bmp"
 IDB_FILE_VIEW           BITMAP                  "res\\fileview.bmp"
 IDB_FILE_VIEW_24        BITMAP                  "res\\fileview_hc.bmp"
-IDB_BITMAP_HOME         BITMAP                  "res\\1_open.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -115,18 +114,27 @@ BEGIN
     LTEXT           "TODO: 将用于操作 CMSInterface Control 的属性的控件放置在此对话框上。",IDC_STATIC,7,25,229,16
 END
 
-IDD_FORMVIEW DIALOGEX 0, 0, 530, 340
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+IDD_FORMVIEW DIALOGEX 0, 0, 572, 278
+STYLE DS_LOCALEDIT | DS_SETFONT | DS_NOIDLEMSG | DS_SETFOREGROUND | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_BORDER
+EXSTYLE WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_CONTEXTHELP | WS_EX_RTLREADING | WS_EX_CONTROLPARENT | WS_EX_APPWINDOW
 FONT 9, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_DIR,"SysTreeView32",TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,9,12,107,316,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT
-    GROUPBOX        "图片",IDC_STATIC,124,0,204,337
-    GROUPBOX        "上传",IDC_STATIC,346,0,184,337
-    CONTROL         "",IDC_LIST_PIC,"SysListView32",LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,131,10,197,318,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT
-    CONTROL         "",IDC_LIST_UP,"SysListView32",LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,354,9,158,306,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT
-    GROUPBOX        "目录",IDC_STATIC,2,0,121,337
-    PUSHBUTTON      "批量上传",IDC_BUTTON_UP,395,317,41,14
-    CONTROL         "全选",IDC_CHECK_ALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,360,320,30,10
+    CONTROL         "",IDC_DIR,"SysTreeView32",TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | TVS_INFOTIP | WS_HSCROLL | WS_TABSTOP,9,11,141,259,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE
+    GROUPBOX        "图片",IDC_STATIC,156,0,180,276
+    GROUPBOX        "上传",IDC_STATIC,336,0,228,276
+    CONTROL         "",IDC_LIST_PIC,"SysListView32",LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,168,12,162,260,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT
+    CONTROL         "",IDC_LIST_UP,"SysListView32",LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,342,12,216,240,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT
+    GROUPBOX        "目录",IDC_STATIC,2,0,154,276
+    PUSHBUTTON      "批量上传",IDC_BUTTON_UP,396,258,41,12
+    CONTROL         "全选",IDC_CHECK_ALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,354,258,30,10
+END
+
+IDD_FORM_PREVIEW DIALOGEX 0, 0, 418, 227
+STYLE DS_ABSALIGN | DS_SETFONT | DS_MODALFRAME | DS_NOIDLEMSG | DS_3DLOOK | DS_NOFAILCREATE | DS_CENTER | DS_CENTERMOUSE | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT | WS_EX_APPWINDOW
+CAPTION "图片预览"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
 END
 
 
@@ -148,21 +156,15 @@ BEGIN
 
     IDD_FORMVIEW, DIALOG
     BEGIN
-        RIGHTMARGIN, 519
-        VERTGUIDE, 121
-        VERTGUIDE, 136
-        VERTGUIDE, 218
-        VERTGUIDE, 254
-        VERTGUIDE, 280
-        VERTGUIDE, 316
-        VERTGUIDE, 328
-        VERTGUIDE, 346
-        VERTGUIDE, 378
-        VERTGUIDE, 410
-        VERTGUIDE, 472
-        VERTGUIDE, 512
-        BOTTOMMARGIN, 337
-        HORZGUIDE, 337
+        RIGHTMARGIN, 561
+        VERTGUIDE, 510
+        BOTTOMMARGIN, 182
+    END
+
+    IDD_FORM_PREVIEW, DIALOG
+    BEGIN
+        RIGHTMARGIN, 318
+        BOTTOMMARGIN, 226
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -170,38 +172,17 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// PNG
+// Menu
 //
 
-IDB_PNG1                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\1_close.png"
-IDB_PNG2                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\1_open.png"
-IDB_PNG3                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\2.png"
-IDB_PNG4                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\3.png"
-IDB_PNG5                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\4.png"
-IDB_PNG6                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\5.png"
-IDB_PNG7                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\6.png"
-IDB_PNG8                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\7.png"
-IDB_PNG9                PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\8.png"
-IDB_PNG10               PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\9.png"
-IDB_PNG11               PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\sim\\10.png"
-IDB_PNG12               PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\checkbox.png"
-IDB_PNG13               PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\edit.png"
-IDB_PNG14               PNG                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\remove.png"
+IDR_MENU MENU 
+BEGIN
+    POPUP "上下文菜单"
+    BEGIN
+        MENUITEM "预览",                          ID_PREVIEW
+    END
+END
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// GIF
-//
-
-IDR_GIF2                GIF                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\folder_Close.gif"
-IDR_GIF3                GIF                     "D:\\work\\zs_c++\\CMSUpload\\Release\\zTreeStyle\\img\\folder_Open.gif"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// JPG
-//
-
-IDR_JPG1                JPG                     "D:\\img\\007.jpg"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -212,6 +193,7 @@ STRINGTABLE
 BEGIN
     IDS_CMSINTERFACE        "CMSInterface Control"
     IDS_CMSINTERFACE_PPG    "CMSInterface Property Page"
+    NO_FILE_SELECT          "没有选择文件"
 END
 
 STRINGTABLE 

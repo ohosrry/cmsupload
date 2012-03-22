@@ -163,7 +163,10 @@ void CCMSInterfaceCtrl::OnDraw(
 	if (!pdc)
 		return;
 	DoSuperclassPaint(pdc, rcBounds);
-	m_formView.MoveWindow(rcBounds,TRUE);
+	if(m_formView.IsFrameWnd()){
+		m_formView.MoveWindow(rcBounds,TRUE);
+	}
+	
 }
 // CCMSInterfaceCtrl::DoPropExchange - 持久性支持
 void CCMSInterfaceCtrl::DoPropExchange(CPropExchange* pPX)
@@ -494,7 +497,7 @@ BSTR CCMSInterfaceCtrl::doGetDriveFiles()
 	CString cs(A2W(retStr.c_str()));
 	//cs.Replace(L"\\\\",L"\\");
 	//CMSBOXW(cs);
-	cs.Replace(L"\\n",L"");
+	//cs.Replace(L"\\n",L"");
 	if(cs.GetLength()>0)
 	{ 
 		/*   CMSBOXW(cs);
@@ -776,7 +779,7 @@ BSTR CCMSInterfaceCtrl::CallJs(LPCTSTR function_name,DISPPARAMS params,INT param
 	 {
 		return -1;
 	 }
-  BOOL ret=m_formView.Create(IDD_FORMVIEW,this);
+     BOOL ret=m_formView.Create(IDD_FORMVIEW,this);
    //   if(ret!=0)
 	  //{
    //    CMSBOX("m_formView create Success");

@@ -25,6 +25,7 @@ struct ST_DRAG
 };
 
 struct ST_THREAD_PARAM{
+	ST_THREAD_PARAM(){}
 CCMSFormView *m_Main;
 INT count;
 };
@@ -81,7 +82,11 @@ public:
 	INT m_Pic_Id;
 	INT m_Pic_Up_Id;
 	CButton m_Upload_Button;
+    CMenu m_Menu;
+	map<string,string *> m_Tree_Map;
+
 	CCheckListBox m_Check_All;
+
     BOOL m_Check_Lock;
 	static CCriticalSection m_Section;
 	std::map<std::string,std::string> m_Up_Map;
@@ -101,6 +106,12 @@ public:
 	afx_msg void OnBnClickedCheckAll();
 	static UINT _cdecl UploadThread(LPVOID lp);
 	afx_msg void OnBnClickedButtonUp();
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
+	void OnPreview();
+	afx_msg void OnNMRClickListUp(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnNMRClickListPic(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 
