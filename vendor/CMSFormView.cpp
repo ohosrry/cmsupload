@@ -62,10 +62,7 @@ CCMSFormView::~CCMSFormView()
 	vector<INT*>::iterator it_pic=m_Pid_Vector.begin();
 	while(it_pic!=m_Pid_Vector.end())
 	{
-		if(NULL!=*it_pic)
-		{
-			delete *it_pic;
-		}
+		SAFE_DELETE(*it_pic);
 		++it_pic;
 	}
 	map<string,string*>::iterator it_map=m_Tree_Map.begin();
@@ -73,6 +70,12 @@ CCMSFormView::~CCMSFormView()
 	{
 		SAFE_DELETE(it_map->second);
 		++it_map;
+	}
+	vector<CBitmap*>::iterator it_bit_map=m_Bitmap_Vector.begin();
+	while(it_bit_map!=m_Bitmap_Vector.end())
+	{
+        SAFE_DELETE(*it_bit_map)
+		++it_bit_map;
 	}
 }
 
@@ -292,7 +295,7 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 		   }
 		   //m_Image_Pic.Add(AfxGetApp()->LoadIcon(IDR_JPG1));
            m_List_Pic.SetImageList(&m_Image_Pic,LVSIL_NORMAL );
-		   m_List_Up.SetImageList(&m_Image_Pic,LVSIL_NORMAL);
+		   //m_List_Up.SetImageList(&m_Image_Pic,LVSIL_NORMAL);
 		   m_Pic_Id=0;
 		   for (;it!=paths["images"].end();++it)
 		   {
@@ -375,6 +378,7 @@ void CCMSFormView::OnLvnBegindragListPic(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 	CPoint ptItem,ptAction,ptImage;
+	INT left=65535,right=0,top=65535,bottom=0;
 	CPoint first,last,bounds;
 	NM_LISTVIEW* plist_view=(NM_LISTVIEW*)pNMHDR;
 	POSITION pos;
@@ -382,14 +386,22 @@ void CCMSFormView::OnLvnBegindragListPic(NMHDR *pNMHDR, LRESULT *pResult)
 	ASSERT(!m_bDraging);
 	m_bDraging=TRUE;
 	pos=m_List_Pic.GetFirstSelectedItemPosition();
+    
 	while(pos)
 	{
+		CRect l_Rect;
 		INT l_index=m_List_Pic.GetNextSelectedItem(pos);
+        m_List_Pic.GetItemRect(l_index,l_Rect,0);
+		left=l_Rect.left<left?l_Rect.left:left;
+		right=l_Rect.right>right?l_Rect.right:right;
+		top=l_Rect.top<top?l_Rect.top:top;
+		bottom=l_Rect.bottom>bottom?l_Rect.bottom:bottom;
 		if(b_first)
 		{
 			m_List_Pic.GetItemPosition(l_index,&first);
 			b_first=FALSE;
 		}
+
         if(NULL==pos)
 		{
            m_List_Pic.GetItemPosition(l_index,&last);
@@ -398,8 +410,8 @@ void CCMSFormView::OnLvnBegindragListPic(NMHDR *pNMHDR, LRESULT *pResult)
 	pos=m_List_Pic.GetFirstSelectedItemPosition();
 	bounds=last-first;
 	m_Big_Drag.DeleteImageList();
-	m_Big_Drag.Create(bounds.x+64,bounds.y+64,ILC_COLOR32|ILC_MASK,1,1);
-	m_Big_Drag_Image.Create(bounds.x+64,bounds.y+64,32,BI_RGB);
+	m_Big_Drag.Create(right-left,bottom-top,ILC_COLOR32|ILC_MASK,1,1);
+	m_Big_Drag_Image.Create(right-left,bottom-top,32,BI_RGB);
 	while(pos)
 	{
 	     ST_DRAG l_st_drag;
@@ -437,7 +449,7 @@ void CCMSFormView::OnLvnBegindragListPic(NMHDR *pNMHDR, LRESULT *pResult)
 	HBITMAP bitmap=m_Big_Drag_Image.Detach();
 	CBitmap bmp;
 	bmp.Attach(bitmap);
-	m_Big_Drag.Add(&bmp,RGB(255,255,255));
+	m_Big_Drag.Add(&bmp,RGB(0,0,0));
     m_Big_Drag.BeginDrag(0,CPoint(0,0));
     m_Big_Drag.DragEnter(this,CPoint(0,0));
 	SetCapture();
@@ -487,11 +499,23 @@ void CCMSFormView::OnLButtonUp(UINT nFlags, CPoint point)
 		res=m_List_Pic.HitTest(&lvHitInfo);
 		CRect rect;
 		m_List_Up.GetWindowRect(&rect);
-		ClientToScreen(&rect);
-		ClientToScreen(&point);
+		//ClientToScreen(&rect);
+		//ClientToScreen(&point);
+		ScreenToClient(&rect);
 		if(rect.PtInRect(point))
 		{
-				m_List_Up.SetImageList(&m_Image_Pic,LVSIL_NORMAL);
+			   
+                if(m_Image_Up.GetImageCount()==0)
+				{
+				  m_Image_Up.DeleteImageList();
+                  m_Image_Up.Create(64,64,ILC_COLOR32|ILC_MASK,0,0);
+				 // m_Pic_Up_Id=0;
+				 // CMSBOX("Create")
+                  m_Image_Up_Id=0;
+				}
+                
+				m_List_Up.SetImageList(&m_Image_Up,LVSIL_NORMAL);
+				
 				vector<ST_DRAG>::iterator it=m_St_Drag.begin();
 				while(it!=m_St_Drag.end())
 				{
@@ -500,8 +524,46 @@ void CCMSFormView::OnLButtonUp(UINT nFlags, CPoint point)
 					lvInfo.flags=LVFI_STRING;
 					if(m_List_Up.FindItem(&lvInfo)==-1)
 					{
-					m_List_Up.InsertItem(m_Pic_Up_Id,(*it).m_String,(*it).m_drag_index);
-					m_Pic_Up_Id++;
+						CImage l_image;
+						CImage l_small;
+                        INT l_w,l_h;
+						CBitmap l_btmp;
+						l_small.Create(64,64,32,BI_RGB);
+                        HRESULT hr=l_image.Load((*it).m_String);
+						if(FAILED(hr))
+						{
+							CMSBOX("l_image.Load((*it).m_String) failed");
+						}
+						l_w=l_image.GetWidth();
+						l_h=l_image.GetHeight();
+                        HDC l_hdc=l_small.GetDC();
+					    SetStretchBltMode(l_hdc,HALFTONE|BLACKONWHITE);
+						BOOL drawRet=FALSE;
+                        if(l_image.IsTransparencySupported())
+						{
+							drawRet=l_image.TransparentBlt(l_hdc,0,0,64,64,0,0,l_w,l_h,CLRBREAK);
+						}
+						if(!drawRet)
+						{
+							CMSBOX("l_image.TransparentBlt failed");
+							
+						}
+						l_small.ReleaseDC();
+						HBITMAP l_bmp=l_small.Detach();
+						BOOL l_bAttach=FALSE;
+
+                        l_bAttach=l_btmp.Attach(l_bmp);
+						if(!l_bAttach)
+						{
+							CMSBOX("l_btmp.Attach failed");
+						}
+						//m_Bitmap_Vector.push_back(l_btmp);
+					    INT l_iAdd_ret=m_Image_Up.Add(&l_btmp,RGB(255,255,255));
+						//CString cs;
+						//cs.Format(L"%d %d %d %d",m_Image_Up.GetImageCount(),l_iAdd_ret,GetLastError(),m_Pic_Up_Id);
+						//CMSBOXW(cs);
+					    m_List_Up.InsertItem(m_Pic_Up_Id,(*it).m_String,m_Image_Up_Id++);
+					    m_Pic_Up_Id++;
 			        }
                     SAFE_DELETE((*it).m_image);
 					++it;
@@ -723,7 +785,6 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
 	m_Section.Lock();
     if(0==_doFtpUpload(W2A(ftpUrl.AllocSysString()),buf,W2A(uploadName.AllocSysString()),W2A(ftpUser.AllocSysString()),W2A(ftpPwd.AllocSysString())))
 	{
-	
       //CString msg;
 	  //msg.Format(L"%s 上传成功",A2W(file_name));
 	 // CMSBOXW(msg);
@@ -787,8 +848,6 @@ void CCMSFormView::OnBnClickedButtonUp()
 	INT i=0,count=m_List_Up.GetSelectedCount();
 	if(count==0)
 	{
-		//CString ccs(NO_FILE_SELECT);
-		
 		::MessageBox(NULL,L"没有选择文件",L"没有选择文件",MB_OK);
 	}
     for(;i<count;++i)
@@ -800,9 +859,7 @@ void CCMSFormView::OnBnClickedButtonUp()
         m_Up_Thread.push_back(theThread);
 		//return;
 	}
- //   sprintf_s(buff,"%d",count);
-	//CMSBOX(buff);
-	// TODO: 在此添加控件通知处理程序代码
+ 
 }
 
 void CCMSFormView::OnMButtonDown(UINT nFlags, CPoint point)
@@ -821,17 +878,11 @@ void CCMSFormView::OnRButtonDown(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if(MK_RBUTTON==nFlags)
 	{
-		//m_Menu.TrackPopupMenu(TPM_CENTERALIGN,point.x,point.y,this);
        CMenu * l_menu=m_Menu.GetSubMenu(0);
-	  // CString cs;
-	  // cs.Format(L"%d",m_Menu.GetMenuItemCount());
-	  // CMSBOXW(cs);
         CRect cr;
 	    GetWindowRect(&cr);
-		//ClientToScreen(&point);
 		 CString cs;
 		 cs.Format(L"%d %d %d %d",cr.left,cr.right,cr.top,cr.bottom);
-		 //CMSBOXW(cs);
 	   if(l_menu){
 		l_menu->TrackPopupMenu(TPM_LEFTALIGN|TPM_RIGHTBUTTON,point.x+cr.left,cr.top+point.y,this);
 	   }

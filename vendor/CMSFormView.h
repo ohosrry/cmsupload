@@ -65,8 +65,10 @@ public:
 	CTreeCtrl m_Tree;
 	CImageList m_Image_List;
 	CImageList m_Image_Pic;
+	CImageList m_Image_Up;
 	CString m_DragItemString;
 	INT m_Item_Drag;
+	INT m_Image_Up_Id;
 	CPoint m_Pt_Origin;
 	CPoint m_ptHotSpot;
 	CImageList *m_Drag_Image;
@@ -91,6 +93,7 @@ public:
 	static CCriticalSection m_Section;
 	std::map<std::string,std::string> m_Up_Map;
 	vector<CWinThread*> m_Up_Thread;
+	vector<CBitmap*> m_BitMap_Vector;
 	afx_msg void OnNMClickDir(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
