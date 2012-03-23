@@ -43,6 +43,7 @@ void CCPreview::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	CDialog::OnLButtonDblClk(nFlags, point);
+	m_Pic_Path=L"";
 	EndDialog(0);
 	//CDialog::OnClose();
 	//CloseWindow();

@@ -16,7 +16,7 @@ using namespace std;
 #endif
 extern map<string,BSTR> strMap;
 
-
+CCriticalSection g_Map_Lock;
 CCMSInterfaceApp theApp;
 
 const GUID CDECL BASED_CODE _tlid =
@@ -35,6 +35,7 @@ BOOL CCMSInterfaceApp::InitInstance()
 	{
 		// TODO: 在此添加您自己的模块初始化代码。
       curl_global_init(CURL_GLOBAL_WIN32);
+	 // g_Map_Lock.Init();
 	}
 
 	return bInit;
@@ -48,6 +49,7 @@ int CCMSInterfaceApp::ExitInstance()
 {
 	// TODO: 在此添加您自己的模块终止代码。
     curl_global_cleanup();
+    
 	return COleControlModule::ExitInstance();
 }
 

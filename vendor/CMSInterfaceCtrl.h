@@ -78,6 +78,8 @@ public:
 	CString httpPwd;
 	CString callBackUrl;
 	CString uploadDir;
+	CString brand_code;
+	CString goods_sn;
 	IDispatch *m_script;
 	CCMSTree tree;
 	CCMSFormView m_formView;
