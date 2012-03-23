@@ -6,6 +6,7 @@
 #include <map>
 #include <atlimage.h>
 #include <afxwin.h>
+#include "CUpStatus.h"
 using namespace std;
 class CCMSFormView;
 struct ST_DRAG
@@ -86,11 +87,12 @@ public:
 	CButton m_Upload_Button;
     CMenu m_Menu;
 	map<string,string *> m_Tree_Map;
-
+    CCUpStatus m_Status;
 	CCheckListBox m_Check_All;
 
     BOOL m_Check_Lock;
 	static CCriticalSection m_Section;
+	static CCMSFormView *m_Instance;
 	std::map<std::string,std::string> m_Up_Map;
 	vector<CWinThread*> m_Up_Thread;
 	vector<CBitmap*> m_BitMap_Vector;
@@ -108,13 +110,19 @@ public:
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedCheckAll();
 	static UINT _cdecl UploadThread(LPVOID lp);
+	static UINT _cdecl UploadStatusThread(LPVOID lp);
 	afx_msg void OnBnClickedButtonUp();
 	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 	void OnPreview();
+	void UpdateUpLoadStatus(TCHAR *clientp,DOUBLE dltotal,DOUBLE dlnow,DOUBLE ultotal,DOUBLE ulnow);
+	static CCMSFormView * getInstance();
 	afx_msg void OnNMRClickListUp(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMRClickListPic(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLvnKeydownListPic(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnBnClickedCheckPic();
 };
 
 

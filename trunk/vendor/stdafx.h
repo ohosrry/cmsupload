@@ -34,7 +34,9 @@
 #endif // _AFX_NO_DAO_SUPPORT
 
 #endif // _WIN64
+#define STATUS_LINE_SEP 20
 #include <afxwin.h>
+#include <afxmt.h>
 typedef char int8_t;
 typedef unsigned char uint8_t;
 typedef short int16_t;
@@ -49,4 +51,7 @@ typedef unsigned __int64 uint64_t;
 	p=NULL;\
 }
 class CCMSInterfaceCtrl;
+class CCMSFormView;
 void ErrorExit(LPTSTR lpszFunction);
+
+extern CCriticalSection g_Map_Lock;

@@ -121,16 +121,22 @@ int ftp_upload_progress(void *clientp,double dltotal,double dlnow,double ultotal
 	char * cb=(char*)clientp;
 	if(ultotal>0&&ulnow>0&&ceil((ulnow/ultotal*100))<=100)
 	{
-	char b[1024]={0};
-	sprintf_s(b,"%g",ulnow/ultotal*100);
+		if(NULL!=CCMSFormView::getInstance())
+		{
+		  CCMSFormView::getInstance()->UpdateUpLoadStatus(A2W(cb),dltotal,dlnow,ultotal,ulnow);
+		}
+	  
+	
+	  //char b[1024]={0};
+	//sprintf_s(b,"%g",ulnow/ultotal*100);
 	//CMSBOX(b);
-	CComBSTR bstr(b); 
-	DISPPARAMS params={0};
-    params.cArgs=1;
-	params.rgvarg=new VARIANT[params.cArgs];
-    bstr.CopyTo(&params.rgvarg[0].bstrVal);
-	params.rgvarg[0].vt=VT_BSTR;
-	CCMSInterfaceCtrl::getInstance()->CallJs(A2W(cb),params);
+	//CComBSTR bstr(b); 
+	//DISPPARAMS params={0};
+ //   params.cArgs=1;
+	//params.rgvarg=new VARIANT[params.cArgs];
+ //   bstr.CopyTo(&params.rgvarg[0].bstrVal);
+	//params.rgvarg[0].vt=VT_BSTR;
+	//CCMSInterfaceCtrl::getInstance()->CallJs(A2W(cb),params);
 	/* if(NULL!=cb){
       CMSBOX(cb);
 	 }*/
@@ -154,16 +160,17 @@ int http_upload_progress(void *clientp,double dltotal,double dlnow,double ultota
 	char * cb=(char*)clientp;
 	if(ultotal>0&&ulnow>0&&ceil((ulnow/ultotal*100))<=100)
 	{
-		char b[1024]={0};
-		sprintf_s(b,"%g",ulnow/ultotal*100);
+		//CCMSFormView::getInstance()->UpdateUpLoadStatus(A2W(cb),dltotal,dlnow,ultotal,ulnow);
+		//char b[1024]={0};
+		//sprintf_s(b,"%g",ulnow/ultotal*100);
 		//CMSBOX(b);
-		CComBSTR bstr(b); 
-		DISPPARAMS params={0};
-		params.cArgs=1;
-		params.rgvarg=new VARIANT[params.cArgs];
-		bstr.CopyTo(&params.rgvarg[0].bstrVal);
-		params.rgvarg[0].vt=VT_BSTR;
-		CCMSInterfaceCtrl::getInstance()->CallJs(A2W(cb),params);
+		//CComBSTR bstr(b); 
+		//DISPPARAMS params={0};
+		//params.cArgs=1;
+		//params.rgvarg=new VARIANT[params.cArgs];
+		//bstr.CopyTo(&params.rgvarg[0].bstrVal);
+		//params.rgvarg[0].vt=VT_BSTR;
+		//CCMSInterfaceCtrl::getInstance()->CallJs(A2W(cb),params);
 		/* if(NULL!=cb){
 		CMSBOX(cb);
 		}*/

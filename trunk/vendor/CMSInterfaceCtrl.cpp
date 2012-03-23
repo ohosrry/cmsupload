@@ -184,6 +184,8 @@ void CCMSInterfaceCtrl::DoPropExchange(CPropExchange* pPX)
 		PX_String(pPX,_T("httpPwd"),httpPwd);
 		PX_String(pPX,_T("callBackUrl"),callBackUrl); 
 		PX_String(pPX,_T("uploadDir"),uploadDir); 
+		PX_String(pPX,_T("brand_code"),brand_code); 
+		PX_String(pPX,_T("goods_sn"),goods_sn); 
 		//PX_String(pPX,_T("myproperty1"),m_property1);
 	}
 	// TODO: 为每个持久的自定义属性调用 PX_ 函数。
