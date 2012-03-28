@@ -15,6 +15,7 @@
 #include <functional>
 #include "CPreview.h"
 #include "CTools.h"
+#include <cmath>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
