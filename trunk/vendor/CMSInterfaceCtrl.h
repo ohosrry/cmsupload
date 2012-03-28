@@ -31,7 +31,7 @@ public:
 	virtual int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	virtual void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	virtual void OnPaint();
-  //  virtual BOOL OnSetObjectRects(LPCRECT lpRectPos, LPCRECT lpRectClip);
+    virtual BOOL OnSetObjectRects(LPCRECT lpRectPos, LPCRECT lpRectClip);
 	virtual BOOL OnEraseBkgnd(CDC* pDC);
 	virtual HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
     static CCMSInterfaceCtrl* getInstance();

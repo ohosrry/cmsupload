@@ -89,7 +89,7 @@ public:
 	map<string,string *> m_Tree_Map;
     CCUpStatus m_Status;
 	CCheckListBox m_Check_All;
-
+    map<string,CString> m_Error_Msg;
     BOOL m_Check_Lock;
 	static CCriticalSection m_Section;
 	static CCMSFormView *m_Instance;
