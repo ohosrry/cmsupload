@@ -30,8 +30,17 @@ CCMSFormView* CCMSFormView::m_Instance=NULL;
 CCMSFormView::CCMSFormView()
 	: CDialog(CCMSFormView::IDD),m_Pic_Id(0),m_bDraging(FALSE),m_Pic_Up_Id(0),m_Check_Lock(FALSE)
 {
+
 CCMSFormView::m_Instance=this;
-	//char buff[1024]={0};
+m_Error_Msg.insert(pair<string,CString>("0",L"上传失败!"));
+m_Error_Msg.insert(pair<string,CString>("1",L"更新图片成功(不含颜色码)!"));
+m_Error_Msg.insert(pair<string,CString>("2",L"新增图片成功(不含颜色码)!"));
+m_Error_Msg.insert(pair<string,CString>("3",L"更新图片成功(含颜色码)!"));
+m_Error_Msg.insert(pair<string,CString>("4",L"新增图片成功(含颜色码)!"));
+m_Error_Msg.insert(pair<string,CString>("5",L"上传图片规则不符合!"));
+m_Error_Msg.insert(pair<string,CString>("6",L"上传图片名字中的六位码和选择的商品6位码不一致!"));
+m_Error_Msg.insert(pair<string,CString>("7",L"图片不存在!"));
+//char buff[1024]={0};
 	//char buff_decrypt[1024]={0};
 	//int b_len,d_len;
  //passport_encrypt("mima123456","mbcms123456789",buff,&b_len);
@@ -193,7 +202,7 @@ BOOL CCMSFormView::OnInitDialog(){
 	Value paths;
 	FastWriter fw;
 	HTREEITEM root=m_Tree.InsertItem(L"我的电脑");
-
+    //CMSBOXW(cs);
 	if(fr.parse(W2A(cs),paths))
 	{
 		if(paths.isObject()&&paths.size()>0){
@@ -235,6 +244,14 @@ BOOL CCMSFormView::OnInitDialog(){
 				it++;
 			}
 		} 
+	}else{
+	 //   CMSBOXW(cs);
+		//fstream fs("D:\\log.txt",ios::app);
+		//string ssx=fr.getFormatedErrorMessages();
+		//CMSBOX(ssx.c_str());
+	 //   fs<<W2A(cs.AllocSysString())<<endl;
+		//fs<<ssx<<endl;
+		//fs.close();
 	}
 	return TRUE;
 }
@@ -254,7 +271,7 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 	cs= CCMSUtils::doGetPathFiles(A2W(p->c_str()));
     //cs.Replace(L'\\','/');
-
+   // CMSBOXW(cs);
    if(fr.parse(W2A(cs),paths))
    {
 	   if(paths.isObject()&&paths.size()>0)
@@ -276,10 +293,15 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 					 char base_buff[255]={0};
 					 getBaseName((*it).asCString(),base_buff);
 					 string l_s(base_buff);
-					 string *node_str=new string((*it).asCString());
-					 HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,root);
-					 m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
-					 m_Tree_Map[it.memberName()]=node_str;
+					 TVITEM tv={0};
+					 tv.pszText=A2W(l_s.c_str());
+					 if(m_Tree.GetItem(&tv))
+					 {
+						 string *node_str=new string((*it).asCString());
+						 HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,root);
+						 m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
+						 m_Tree_Map[it.memberName()]=node_str;
+					 }
 				 }
 			  }
 		   }
@@ -595,6 +617,9 @@ void CCMSFormView::OnLButtonUp(UINT nFlags, CPoint point)
 		m_bDraging=FALSE;
 		Invalidate();
 		ClipCursor(NULL);
+		//SetDlgItemInt(IDC_CHECK_ALL,1);
+	    ((CButton*)GetDlgItem(IDC_CHECK_ALL))->SetCheck(TRUE);
+        OnBnClickedCheckAll();
 	}
 	CDialog::OnLButtonUp(nFlags, point);
 }
@@ -667,6 +692,8 @@ void CCMSFormView::OnNMDblclkListPic(NMHDR *pNMHDR, LRESULT *pResult)
 		//CMSBOXW(cs1);
 		m_List_Up.InsertItem(m_Pic_Up_Id,cs,m_Image_Up_Id++);
 		m_Pic_Up_Id++;
+		((CButton*)GetDlgItem(IDC_CHECK_ALL))->SetCheck(TRUE);
+		OnBnClickedCheckAll();
 	}
     //INT *pid=(INT*)m_List_Up.GetItemData(pNMItemActivate->iItem);
 	//cs.Format(L"%d %d",pNMItemActivate->iItem,pNMItemActivate->iSubItem);
@@ -885,13 +912,74 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
 		  string l_goods_sn=ctool::URLEncode(W2A(goods_sn));
 		  upload_url.append("?files="+param);
 		  upload_url.append("&brand_code="+l_brand_code);
-		  upload_url.append("&brand_code="+l_goods_sn);
+		  upload_url.append("&goods_sn="+l_goods_sn);
+		  //fstream fs("D:\\log.txt",ios::app);
+
+
 		  //CMSBOX(upload_url.c_str());
+		  //fs<<upload_url.c_str()<<endl;
+		  //fs.close();
 		  char *http_buff=new char[102400];
 		  INT ret=_doHttpGet(upload_url.c_str(),http_buff);
 		  if(ret==0)
-		  {
-			 // CMSBOX(http_buff);
+		  { 
+		     //pMain->m_Status.m_Can_Exit=TRUE;
+             Value l_value;
+			 Reader fr;
+			 //CMSBOX(http_buff);
+			 char * l_buff=W2A((wchar_t*)http_buff);
+			// CMSBOX(http_buff);
+			 //sprintf_s(http_buff,102300,"%s","{\"code\":\"0\",\"msg\":\"好额\"}");
+			 if(fr.parse(http_buff,l_value))
+			 {
+				 if(l_value.isMember("code")&&l_value.isMember("msg"))
+				 {
+                    if(strcmp(l_value["code"].asCString(),"0")==0)
+					{
+						map<CString,ST_STATUS>::iterator l_it_status=pMain->m_Status.m_Status_Map.find(l_file_name);
+						if(l_it_status!=pMain->m_Status.m_Status_Map.end())
+						{
+                           if(pMain->m_Error_Msg.find(l_value["code"].asCString())!=pMain->m_Error_Msg.end())
+						   {
+                              //l_it_status->second.next->SetWindowText(pMain->m_Error_Msg[l_value["code"].asCString()]);
+							//  CMSBOXW(pMain->m_Error_Msg[l_value["code"].asCString()]);
+                               //g_Map_Lock.Lock();
+
+							   l_it_status->second.s_percent=pMain->m_Error_Msg[l_value["code"].asCString()];
+                               INT l_ret=_doFtpDelete(W2A(ftpUrl.AllocSysString()),W2A(uploadName.AllocSysString()),W2A(ftpUser.AllocSysString()),W2A(ftpPwd.AllocSysString()));
+                                if(l_ret==0)
+								{
+                                //  CMSBOX("delete success");
+								}
+						      // g_Map_Lock.Unlock();
+						   }
+						}
+					}else{
+						map<CString,ST_STATUS>::iterator l_it_status=pMain->m_Status.m_Status_Map.find(l_file_name);
+						if(l_it_status!=pMain->m_Status.m_Status_Map.end())
+						{
+                             string csx=l_value["code"].asString();
+							 if(csx=="5"||csx=="6"||csx=="7")
+							 {
+								 INT l_ret=_doFtpDelete(W2A(ftpUrl.AllocSysString()),W2A(uploadName.AllocSysString()),W2A(ftpUser.AllocSysString()),W2A(ftpPwd.AllocSysString()));
+								 if(l_ret==0)
+								 {
+									 //CMSBOX("delete success");
+								 }
+							 }
+							if(pMain->m_Error_Msg.find(l_value["code"].asCString())!=pMain->m_Error_Msg.end())
+							{
+								//l_it_status->second.next->SetWindowText(pMain->m_Error_Msg[l_value["code"].asCString()]);
+								//CMSBOXW(pMain->m_Error_Msg[l_value["code"].asCString()]);
+								g_Map_Lock.Lock();
+								l_it_status->second.s_percent=pMain->m_Error_Msg[l_value["code"].asCString()];
+								g_Map_Lock.Unlock();
+							}
+						}
+					}
+				 }
+
+			 }
 		  }
           SAFE_DELETE(http_buff);
 	 // }
@@ -920,7 +1008,14 @@ void CCMSFormView::OnBnClickedButtonUp()
 		st_param->count=i;
 	    CString csx=m_List_Up.GetItemText(i,0);
 		pair<CString,CString> l_p(csx,csx);
+		ST_STATUS * st_status=new ST_STATUS();
+		st_status->percent=0;
+		st_status->m_Progress=new CProgressCtrl();
+		st_status->pre=new CStatic();
+		st_status->next=new CStatic();
+		pair<CString,ST_STATUS> l_ps(csx,*st_status);
 		m_Status.m_Map.insert(l_p);
+		m_Status.m_Status_Map.insert(l_ps);
 		CWinThread* theThread=AfxBeginThread(&CCMSFormView::UploadThread,st_param,0,0,NULL,NULL);  
         m_Up_Thread.push_back(theThread);
 
@@ -937,9 +1032,9 @@ void CCMSFormView::OnBnClickedButtonUp()
 		//CString css;
 		//css.Format(L"%d",GetLastError());
 		//CMSBOXW(css);
-        
+        m_Status.m_Can_Exit=FALSE;
 		m_Status.Create(IDD_FORM_STATUS,NULL);
-		
+		//m_Status.DoModal();
 		//CMSBOXW(L"asdsad");
 //CWinThread* theThread=AfxBeginThread(&CCMSFormView::UploadStatusThread,this,0,0,NULL,NULL); 
 		//SetFocus();
@@ -1075,9 +1170,17 @@ void CCMSFormView::UpdateUpLoadStatus(TCHAR *clientp,DOUBLE dltotal,DOUBLE dlnow
    cs.Format(L"%s 上传进度 %g%s",clientp,ceil(ulnow/ultotal*100),L"%");
    //CMSBOXW(cs);
    g_Map_Lock.Lock();
-   m_Status.m_Map[clientp]=cs;
+   //m_Status.m_Map[clientp]=cs;
+   map<CString,ST_STATUS>::iterator it_find=m_Status.m_Status_Map.find(clientp);
+   if(it_find!=m_Status.m_Status_Map.end())
+   {
+	  m_Status.m_Status_Map[clientp].percent=(INT)ceil(ulnow/ultotal*100);
+	  CString css;
+	  css.Format(L"%d%s",(INT)ceil(ulnow/ultotal*100),L"%");
+	  m_Status.m_Status_Map[clientp].s_percent=css;
+   }
    g_Map_Lock.Unlock();
-   
+   //m_Status.DoUpdate();
    //CMSBOXW(cs);
 
 }

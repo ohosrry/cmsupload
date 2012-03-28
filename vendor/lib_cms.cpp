@@ -282,44 +282,17 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 		return 1;
 
 	}
-   /* if(strlen(new_file_path)!=0)
-	{
-		vector<string>::iterator it=dirVector.begin();
-		while(it!=dirVector.end()){
-            string mk_str("MKD ");
-			mk_str.append(*it);
-			mkdirlist=curl_slist_append(mkdirlist,mk_str.c_str());
-			mk_str.clear();
-			mk_str="CWD ";
-            mk_str.append(*it);
-			mkdirlist=curl_slist_append(mkdirlist,mk_str.c_str());
-			it++;
-		}
-	}*/
 	if(_stricmp(file_name,new_name)!=0)
 	{
 		//headerlist = curl_slist_append(headerlist, buf_1);
 		//headerlist = curl_slist_append(headerlist, buf_2);
 	}
-	//headerlist = curl_slist_append(headerlist, buf_3);
-	/* we want to use our own read function */
-	//curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
 	if(NULL!=user&&NULL!=pwd)
 	{
 		sprintf_s(buf_usr_pwd,"%s:%s",user,pwd);
 		curl_easy_setopt(curl,CURLOPT_USERPWD,buf_usr_pwd);
 		//curl_easy_setopt(query_curl,CURLOPT_USERPWD,buf_usr_pwd);
 	}
-   // curl_easy_setopt(query_curl,CURLOPT_URL, buf_remote_url);
-	//curl_easy_setopt(query_curl,CURLOPT_POSTQUOTE,querylist);
-    //qres=curl_easy_perform(query_curl);
-
-	//if(qres){
-	//	char curl_error[128]={0};
-	//	sprintf_s(curl_error,"%s\n",curl_easy_strerror(qres));
-	//	CMSBOX(curl_error);
-	//}
-	//curl_easy_cleanup(query_curl);
 	curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 	curl_easy_setopt(curl,CURLOPT_URL, buf_remote_url);
 	curl_easy_setopt(curl,CURLOPT_PROGRESSFUNCTION,ftp_upload_progress);
@@ -351,10 +324,76 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	fclose(hd_src); /* close the local file */
 	return 0;
 }
+
+int _doFtpDelete(const char* ftpurl,const char* file_name,const char* user,const char* pwd,const char* call_back)
+{
+	USES_CONVERSION;
+	CURL *curl=NULL;
+	//CURL *query_curl=NULL;
+	CURLcode res;
+	//CURLcode qres;
+	//FILE *hd_src;
+	//vector<string> dirVector;
+	//char *file_base_name=NULL;
+	//char *new_file_base_name=NULL;
+	static  char buf_1 [128] ={0};
+	static  char buf_2 [128] ={0};
+	static  char buf_3 [16]={0};
+	static char buf_error[32]={0};
+	static char buf_remote_url [1024]={0};
+	static char buf_usr_pwd[128]={0};
+	static char buf_mkdir[64]={0};
+	static char buf_type[64]={0};
+	static char new_file_path[255]={0};
+	//static char query_buffer[64]={0};
+	struct curl_slist *headerlist=NULL;
+	curl = curl_easy_init();
+	//query_curl=curl_easy_init();
+
+	if(file_name!=NULL){
+		sprintf_s(buf_1,"DELE %s", file_name+1);
+		headerlist=curl_slist_append(headerlist,buf_1);
+		//CMSBOX(buf_1);
+	}
+	sprintf_s(buf_remote_url,"%s",ftpurl);
+	sprintf_s(buf_3,"MODE S");
+	sprintf_s(buf_type,"TYPE I");
+	//headerlist=curl_slist_append(headerlist,buf_3);
+	//headerlist=curl_slist_append(headerlist,buf_type);
+	if(NULL!=user&&NULL!=pwd)
+	{
+		sprintf_s(buf_usr_pwd,"%s:%s",user,pwd);
+		curl_easy_setopt(curl,CURLOPT_USERPWD,buf_usr_pwd);
+	}
+	curl_easy_setopt(curl,CURLOPT_URL, buf_remote_url);
+    curl_easy_setopt(curl,CURLOPT_POSTQUOTE,headerlist);
+	res = curl_easy_perform(curl);
+	if(res)
+	{
+		char curl_error[128]={0};
+		sprintf_s(curl_error,"%s\n",curl_easy_strerror(res));
+		CMSBOX(curl_error);
+		curl_slist_free_all (headerlist);
+		curl_easy_cleanup(curl);
+		//fclose(hd_src);
+		return 1;
+	}
+	curl_slist_free_all (headerlist);
+	curl_easy_cleanup(curl);
+	//CMSBOX(call_back);
+	//CCMSInterfaceCtrl::getInstance()->CallJs(web2,A2W(call_back));
+	//fclose(hd_src); /* close the local file */
+	return 0;
+	//return 0;
+}
+
 static int write_call_back(char *buffer,size_t size,size_t nitems,void *outstream)
 {
+	USES_CONVERSION;
+	//CMSBOXW(A2W(buffer));
 	//fwrite(buffer,size,nitems,(FILE*)outstream);
-	 sprintf_s((char*)outstream,102400,"%s",buffer);
+	sprintf_s((char*)outstream,102400,"%s",buffer);
+	//wsprintf((TCHAR*)outstream,L"%s",buffer);
 	//wcout<<A2W(buffer)<<endl;
 //	wcout<<(L"ËÑË÷°¡°¡°¡Èý´ó")<<endl;
 	return size*nitems;
@@ -444,7 +483,7 @@ long rand_num(int min,int max)
 	//ddrand=strtod(time_buff,&pend);
 	//srand((UINT)ddrand);
 	srand((unsigned int)time(NULL));
-	long l= (double)rand() / (RAND_MAX + 1) * (max - min)+ min;
+	long l= (long)(double)rand() / (RAND_MAX + 1) * (max - min)+ min;
 	return l;
 }
 

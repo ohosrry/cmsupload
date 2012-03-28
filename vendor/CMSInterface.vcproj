@@ -331,6 +331,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CIconv.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CMSConstant.h"
 				>
 			</File>

@@ -37,6 +37,7 @@
 #define STATUS_LINE_SEP 20
 #include <afxwin.h>
 #include <afxmt.h>
+//#include "CIconv.h"
 typedef char int8_t;
 typedef unsigned char uint8_t;
 typedef short int16_t;
@@ -53,5 +54,14 @@ typedef unsigned __int64 uint64_t;
 class CCMSInterfaceCtrl;
 class CCMSFormView;
 void ErrorExit(LPTSTR lpszFunction);
+
+typedef struct _ST_STATUS{
+   CStatic *pre; 
+   CProgressCtrl *m_Progress;
+   CStatic *next;
+   INT percent;
+   CString s_percent;
+}ST_STATUS;
+
 
 extern CCriticalSection g_Map_Lock;

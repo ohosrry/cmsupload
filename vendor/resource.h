@@ -20,8 +20,8 @@
 #define IDC_CHECK1                      209
 #define IDC_CHECK_ALL                   209
 #define IDR_GIF1                        217
-#define IDC_CHECK2                      217
 #define IDC_CHECK_PIC                   217
+#define IDC_PROGRESS3                   224
 #define IDB_BITMAP1                     241
 #define IDR_MENU                        243
 #define ID_32768                        32768
@@ -34,9 +34,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        244
+#define _APS_NEXT_RESOURCE_VALUE        245
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         218
+#define _APS_NEXT_CONTROL_VALUE         225
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

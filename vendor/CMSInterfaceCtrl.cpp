@@ -39,6 +39,7 @@ BEGIN_MESSAGE_MAP(CCMSInterfaceCtrl, COleControl)
 	ON_WM_CREATE()
 	ON_WM_WINDOWPOSCHANGED()
 
+
 	ON_WM_ERASEBKGND()
 	//ON_WM_PAINT()
 END_MESSAGE_MAP()
@@ -804,8 +805,8 @@ BSTR CCMSInterfaceCtrl::CallJs(LPCTSTR function_name,DISPPARAMS params,INT param
 	 GetClientRect(rc);
      dc.FillSolidRect(rc,RGB(0,255,0));
  }
-// BOOL CCMSInterfaceCtrl::OnSetObjectRects(LPCRECT lprcPosRect, LPCRECT lprcClipRect)
-//{
+ BOOL CCMSInterfaceCtrl::OnSetObjectRects(LPCRECT lprcPosRect, LPCRECT lprcClipRect)
+{
 //	/*ASSERT(lprcPosRect != NULL);
 //
 //	 Remember the position rectangle.
@@ -858,8 +859,8 @@ BSTR CCMSInterfaceCtrl::CallJs(LPCTSTR function_name,DISPPARAMS params,INT param
 //	//char b[64]={0};
 //	//sprintf_s(b,"%d",GetLastError());
 //	//CMSBOX(b);
-//	return TRUE;
-//}
+	return TRUE;
+}
  BOOL CCMSInterfaceCtrl::OnEraseBkgnd(CDC* pDC)
  {
 	//COLORREF ref=0x000000;
