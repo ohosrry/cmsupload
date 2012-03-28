@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,4
- PRODUCTVERSION 1,0,0,4
+ FILEVERSION 1,0,0,5
+ PRODUCTVERSION 1,0,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -77,13 +77,13 @@ BEGIN
         BEGIN
             VALUE "Comments", "邦购CMS异步上传浏览器插件"
             VALUE "CompanyName", "邦购信息科技有限公司"
-            VALUE "FileDescription", "第三个版本"
-            VALUE "FileVersion", "1.0.0.4"
+            VALUE "FileDescription", "The First Beta Version"
+            VALUE "FileVersion", "1.0.0.5"
             VALUE "InternalName", "CMSInterface.ocx"
             VALUE "LegalCopyright", "邦购信息科技有限公司,版权所有"
             VALUE "OriginalFilename", "CMSInterface.ocx"
-            VALUE "ProductName", "邦购上传"
-            VALUE "ProductVersion", "1.0.0.4"
+            VALUE "ProductName", "邦购CMS上传插件"
+            VALUE "ProductVersion", "1.0.0.5"
         END
     END
     BLOCK "VarFileInfo"
