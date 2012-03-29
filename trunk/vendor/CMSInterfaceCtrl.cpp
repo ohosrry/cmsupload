@@ -402,9 +402,9 @@ BSTR CCMSInterfaceCtrl::doGetPathFiles( BSTR path_name)
 					}
 				}
 			}
-			if(cff.GetFileName().Find(L".jpg")>0||
-				cff.GetFileName().Find(L".gif")>0||
-				cff.GetFileName().Find(L".png")>0)
+			if(cff.GetFileName().Find(L".jpg")!=-1||
+				cff.GetFileName().Find(L".gif")!=-1||
+				cff.GetFileName().Find(L".png")!=-1)
 			{
 				/*		  CMSBOX("image");
 				return NULL;*/

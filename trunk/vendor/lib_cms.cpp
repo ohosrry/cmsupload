@@ -1,3 +1,4 @@
+#pragma once
 #include "stdafx.h"
 #ifndef BUFFERSIZE
 #define  BUFFERSIZE 16777216
@@ -310,7 +311,7 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	if(res)
 	{
 		char curl_error[128]={0};
-		sprintf_s(curl_error,"%s\n",curl_easy_strerror(res));
+		sprintf_s(curl_error,"_doFtpUpload %s %s\n",file_name,curl_easy_strerror(res));
 		CMSBOX(curl_error);
 		curl_slist_free_all (headerlist);
 		curl_easy_cleanup(curl);
@@ -325,12 +326,22 @@ int _doFtpUpload(const char* ftpurl,const char* file_name,const char* new_name,c
 	return 0;
 }
 
+static size_t delete_write_callback(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+	//size_t retcode = fread(ptr, size, nmemb, (FILE*)stream);
+	//fprintf(stderr, "*** We read %d bytes from file\n", retcode);
+	return size*nmemb;
+}
+
+
 int _doFtpDelete(const char* ftpurl,const char* file_name,const char* user,const char* pwd,const char* call_back)
 {
 	USES_CONVERSION;
+    char l_buff[10240]={0};
 	CURL *curl=NULL;
 	//CURL *query_curl=NULL;
 	CURLcode res;
+	
 	//CURLcode qres;
 	//FILE *hd_src;
 	//vector<string> dirVector;
@@ -366,12 +377,15 @@ int _doFtpDelete(const char* ftpurl,const char* file_name,const char* user,const
 		curl_easy_setopt(curl,CURLOPT_USERPWD,buf_usr_pwd);
 	}
 	curl_easy_setopt(curl,CURLOPT_URL, buf_remote_url);
+	curl_easy_setopt(curl,CURLOPT_WRITEDATA,l_buff);
+	curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,delete_write_callback);
     curl_easy_setopt(curl,CURLOPT_POSTQUOTE,headerlist);
+
 	res = curl_easy_perform(curl);
 	if(res)
 	{
 		char curl_error[128]={0};
-		sprintf_s(curl_error,"%s\n",curl_easy_strerror(res));
+		sprintf_s(curl_error,"_doFtpDelete %s  %s\n",file_name,curl_easy_strerror(res));
 		CMSBOX(curl_error);
 		curl_slist_free_all (headerlist);
 		curl_easy_cleanup(curl);
@@ -461,7 +475,9 @@ int _doHttpGet(const char* httpurl,char* result_buffer)
 	if (code)
 	{
 		//perror(curl_easy_strerror(code));
-		  CMSBOX(curl_easy_strerror(code));
+		char buff[128]={0};
+		sprintf_s(buff,"_doHttpGet %s %s",httpurl,curl_easy_strerror(code));
+		  CMSBOX(buff);
 		return 1;
 	}
 	return 0;

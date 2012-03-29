@@ -57,6 +57,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				OmitDefaultLibName="false"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -73,12 +74,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="ws2_32.lib wldap32.lib "
+				AdditionalDependencies="ws2_32.lib wldap32.lib  mfcs90ud.lib MSVCRTD.lib"
 				OutputFile="..\Release\$(ProjectName).ocx"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;D:\dev\curl-7.23.1\lib\LIB-Release&quot;"
+				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames=""
+				IgnoreDefaultLibraryNames="mfcs90ud.lib;MSVCRTD.lib"
 				ModuleDefinitionFile=".\CMSInterface.def"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -115,6 +116,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
+			UseOfATL="0"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -144,6 +146,7 @@
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories=".\include;.\"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;"
+				KeepComments="false"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -166,17 +169,25 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="ws2_32.lib wldap32.lib "
+				PerUserRedirection="false"
+				LinkLibraryDependencies="false"
+				UseLibraryDependencyInputs="false"
+				AdditionalDependencies="ws2_32.lib wldap32.lib mfcs90u.lib  MSVCRT.lib"
+				ShowProgress="0"
 				OutputFile="$(OutDir)\$(ProjectName).ocx"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;D:\dev\curl-7.23.1\lib\LIB-Release&quot;"
+				AdditionalLibraryDirectories=""
 				EnableUAC="false"
 				UACUIAccess="false"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="MSVCRT.lib;mfcs90u.lib"
 				ModuleDefinitionFile=".\CMSInterface.def"
+				AddModuleNamesToAssembly=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				EntryPointSymbol=""
 				TargetMachine="1"
 			/>
 			<Tool
@@ -1381,10 +1392,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ClassDiagram1.cd"
-			>
-		</File>
 		<File
 			RelativePath=".\CMSInterface.lic"
 			>

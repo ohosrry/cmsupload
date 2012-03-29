@@ -17,12 +17,16 @@ public:
 	map<CString,ST_STATUS> m_Status_Map;
 	CProgressCtrl m_Prog;
     BOOL m_Can_Exit;
+	BOOL m_Can_Create;
+	BOOL m_Need_Init;
+	BOOL m_Update_Thread_Exit;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg BOOL OnInitDialog();
+	void DoInit();
 	void DoCleanUp();
 	void DoUpdate();
 	static UINT _cdecl UpdateThread(LPVOID lp);

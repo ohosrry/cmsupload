@@ -62,6 +62,4 @@ typedef struct _ST_STATUS{
    INT percent;
    CString s_percent;
 }ST_STATUS;
-
-
 extern CCriticalSection g_Map_Lock;
