@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LIB_CMS_H
 #define LIB_CMS_H
 #define LOCAL_FILE      "D:\\local\\upload.txt"

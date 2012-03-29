@@ -173,6 +173,8 @@ BOOL CCMSFormView::OnInitDialog(){
 		USES_CONVERSION;
 	CDialog::OnInitDialog();
 	m_Menu.LoadMenu(IDR_MENU);
+	//m_Status.Create(IDD_FORM_STATUS,this);
+	//m_Status.ShowWindow(SW_HIDE);
 	//m_Menu.CreateMenu();
 	m_brush.CreateSolidBrush(RGB(0xFa,0xFa,0xFa));
 	m_List_Pic.SetBkColor(RGB(0xFa,0xFa,0xFa));
@@ -225,23 +227,23 @@ BOOL CCMSFormView::OnInitDialog(){
 					it++;
 					continue;
 				}
-				if((*it).isObject()&&(*it).size()>0){
-					Value::iterator l_it=(*it).begin();
-					for (;l_it!=(*it).end();++l_it)
-					{
-						if((*l_it).isString()&&strncmp((*l_it).asCString(),".",1)!=0){
-							char base_buff[255]={0};
-							getBaseName((*l_it).asCString(),base_buff);
-							string l_s(base_buff);
-							string *node_str=new string((*l_it).asCString());
-							//l_root=m_Tree.InsertItem(A2W(l_s.c_str()),root);
-							HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,l_root);
-							m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
-							m_Tree_Map[it.memberName()]=node_str;
+				//if((*it).isObject()&&(*it).size()>0){
+				//	Value::iterator l_it=(*it).begin();
+				//	for (;l_it!=(*it).end();++l_it)
+				//	{
+				//		if((*l_it).isString()&&strncmp((*l_it).asCString(),".",1)!=0){
+				//			char base_buff[255]={0};
+				//			getBaseName((*l_it).asCString(),base_buff);
+				//			string l_s(base_buff);
+				//			string *node_str=new string((*l_it).asCString());
+				//			//l_root=m_Tree.InsertItem(A2W(l_s.c_str()),root);
+				//			HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,l_root);
+				//			m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
+				//			m_Tree_Map[it.memberName()]=node_str;
 
-						}
-					}
-				}
+				//		}
+				//	}
+				//}
 				it++;
 			}
 		} 
@@ -256,6 +258,11 @@ BOOL CCMSFormView::OnInitDialog(){
 	}
 	return TRUE;
 }
+
+
+
+
+
 void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	USES_CONVERSION;
@@ -272,7 +279,7 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 	cs= CCMSUtils::doGetPathFiles(A2W(p->c_str()));
     //cs.Replace(L'\\','/');
-   // CMSBOXW(cs);
+    //CMSBOXW(cs);
    if(fr.parse(W2A(cs),paths))
    {
 	   if(paths.isObject()&&paths.size()>0)
@@ -280,7 +287,7 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 		 
 		   if(m_Tree.ItemHasChildren(root))
 		   {
-		     //return;
+		     return;
 		   }
 		   Value::iterator it=paths.begin();
 		   for(;it!=paths.end();++it)
@@ -288,16 +295,22 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
               if((*it).isString())
 			  {
 				  TVITEM tv={0};
+				  tv.mask=TVIF_TEXT;
+				  tv.cchTextMax=1024;
 				  tv.pszText=A2W((*it).asCString());
-				 if(!m_Tree.GetItem(&tv)&&strncmp((*it).asCString(),".",1)!=0)
+				 // CMSBOXW(tv.pszText);
+				 if(FALSE==m_Tree.GetItem(&tv)&&strncmp((*it).asCString(),".",1)!=0)
 				 {
 					 char base_buff[255]={0};
 					 getBaseName((*it).asCString(),base_buff);
 					 string l_s(base_buff);
 					 TVITEM tv={0};
+					 tv.mask=TVIF_TEXT;
+					 tv.cchTextMax=1024;
 					 tv.pszText=A2W(l_s.c_str());
-					 if(m_Tree.GetItem(&tv))
+					 if(m_Tree.GetItem(&tv)==FALSE)
 					 {
+						 //CMSBOXW(tv.pszText);
 						 string *node_str=new string((*it).asCString());
 						 HTREEITEM lroot=m_Tree.InsertItem(A2W(l_s.c_str()),0,0,root);
 						 m_Tree.SetItemData(lroot,(DWORD_PTR)node_str);
@@ -311,7 +324,7 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
 	   //{
     //     
 	   //}
-	   // CMSBOXW(cs);
+	
 	   if(paths.isMember("images")&&paths["images"].isObject()&&paths["images"].size()>0)
 	   {
 		   m_List_Pic.DeleteAllItems();
@@ -381,6 +394,12 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
          m_List_Pic.DeleteAllItems();
 	   }
    }else{
+	   //fstream fs("D:\\log.txt",ios::app);
+	   //string ssx=fr.getFormatedErrorMessages();
+	   //CMSBOX(ssx.c_str());
+	   //   fs<<W2A(cs.AllocSysString())<<endl;
+	   //fs<<ssx<<endl;
+	   //fs.close();
 	  // m_List_Pic.DeleteAllItems();
    }
 
@@ -1001,6 +1020,7 @@ void CCMSFormView::OnBnClickedButtonUp()
 	if(count==0)
 	{
 		::MessageBox(NULL,L"没有选择文件",L"没有选择文件",MB_OK);
+		return;
 	}
     for(;i<count;++i)
 	{
@@ -1034,14 +1054,30 @@ void CCMSFormView::OnBnClickedButtonUp()
 		//css.Format(L"%d",GetLastError());
 		//CMSBOXW(css);
         m_Status.m_Can_Exit=FALSE;
-		m_Status.Create(IDD_FORM_STATUS,NULL);
+		if(!m_Status.IsFrameWnd())
+		{
+			//CMSBOX("m_Status.Create");
+			//m_Status.DoModal();
+			//m_Status.ShowWindow(SW_SHOW);
+			m_Status.m_Need_Init=TRUE;
+			if(m_Status.m_Can_Create)
+			{
+               m_Status.Create(IDD_FORM_STATUS,this);
+			   m_Status.m_Can_Create=FALSE;
+			   m_Status.m_Need_Init=FALSE;
+			}
+		
+			m_Status.ShowWindow(SW_SHOW);
+			m_Status.DoInit();
+		}
+			
 		//m_Status.DoModal();
 		//CMSBOXW(L"asdsad");
 //CWinThread* theThread=AfxBeginThread(&CCMSFormView::UploadStatusThread,this,0,0,NULL,NULL); 
 		//SetFocus();
 		//m_Status.EnableWindow();
 	}else{
-		m_Status.m_Map.clear();
+		//m_Status.m_Map.clear();
 	}
  
 }

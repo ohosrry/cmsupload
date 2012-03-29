@@ -10,7 +10,7 @@
 
 IMPLEMENT_DYNAMIC(CCUpStatus, CDialog)
 CCUpStatus::CCUpStatus(CWnd* pParent /*=NULL*/)
-	: CDialog(CCUpStatus::IDD, pParent),m_Can_Exit(FALSE)
+	: CDialog(CCUpStatus::IDD, pParent),m_Can_Exit(FALSE),m_Can_Create(TRUE)
 {
 
 }
@@ -23,8 +23,13 @@ CCUpStatus::~CCUpStatus()
 void CCUpStatus::DoCleanUp()
 {
 	m_Can_Exit=TRUE;
-	map<CString,ST_STATUS>::iterator it=m_Status_Map.begin();
+	while(!m_Update_Thread_Exit)
+	{
+      Sleep(10);
+	}
+	CDialog::OnClose();
 	g_Map_Lock.Lock();
+	map<CString,ST_STATUS>::iterator it=m_Status_Map.begin();
     while(it!=m_Status_Map.end())
 	{
         SAFE_DELETE(it->second.m_Progress);
@@ -35,11 +40,11 @@ void CCUpStatus::DoCleanUp()
 	m_Map.clear();
 	m_Status_Map.clear();
 	g_Map_Lock.Unlock();
-	CDialog::OnClose();
+	
 }
 BOOL CCUpStatus::OnInitDialog()
 {   
-	INT originX=250,originY=30;
+	INT originX=500,originY=30;
 	map<CString,ST_STATUS>::iterator it=m_Status_Map.begin();
 	CRect cr1(10,10,200,30);
 	/*m_Prog.Create(WS_CHILD|WS_VISIBLE|PBS_SMOOTH,cr1,this,0);
@@ -47,7 +52,7 @@ BOOL CCUpStatus::OnInitDialog()
 	while(it!=m_Status_Map.end())
 	{
 		CRect cr(originX,originY,originX+200,originY+20);
-		CRect pre(originX-250,originY,originX,originY+20);
+		CRect pre(originX-500,originY,originX,originY+20);
 		CRect next(originX+200,originY,originX+200+400,originY+20);
 		//ClientToScreen(&cr);
 		CString percent;
@@ -57,23 +62,27 @@ BOOL CCUpStatus::OnInitDialog()
         BOOL ret=it->second.m_Progress->Create(WS_CHILD|WS_VISIBLE|PBS_SMOOTH,cr,this,0);
 		it->second.pre->Create(l_Up_Text,WS_VISIBLE|WS_CHILD,pre,this,0);
 		it->second.next->Create(percent,WS_VISIBLE|WS_CHILD,next,this,0);
-	    CFont cf;
-		LOGFONT lfont={0};
-		memset(&lfont, 0, sizeof(LOGFONT));
-        lfont.lfHeight=3;
-		_tcsncpy_s(lfont.lfFaceName, LF_FACESIZE, _T("Arial"), 3);  
-        VERIFY(cf.CreateFontIndirect(&lfont));
-		it->second.pre->SetFont(&cf);
 		it->second.m_Progress->SetRange(0,100);
 		it->second.m_Progress->SetPos(0);
+		CFont cf;
+		LOGFONT lfont={0};
+		memset(&lfont, 0, sizeof(LOGFONT));
+		lfont.lfHeight=12;
+		wcscpy_s(lfont.lfFaceName, LF_FACESIZE, _T("Arial"));  
+		cf.CreateFontIndirect(&lfont);
+		it->second.pre->SetFont(&cf,FALSE);
+
+		//it->second.pre->SetWindowText(l_Up_Text);
 		originY+=STATUS_LINE_SEP;
 		//CMSBOX("OK");
 		//CString ccs;
-		//ccs.Format(L"%d",ret);
-		//CMSBOXW(it->first);
+		//ccs.Format(L"%d",GetLastError());
+		//CMSBOXW(ccs);
 		++it;
 	}
-	AfxBeginThread(&CCUpStatus::UpdateThread,this);
+	//RedrawWindow();
+   AfxBeginThread(&CCUpStatus::UpdateThread,this);
+   m_Update_Thread_Exit=FALSE;
 	return CDialog::OnInitDialog();
 }
 
@@ -82,20 +91,33 @@ BOOL CCUpStatus::OnSetObjectRects(LPCRECT lpRectPos, LPCRECT lpRectClip)
 	return TRUE;
 }
 
+void CCUpStatus::DoInit()
+{   
+	if(m_Need_Init)
+	{
+	   OnInitDialog();
+       m_Need_Init=FALSE;
+
+	}
+
+}
+
 UINT CCUpStatus::UpdateThread(LPVOID lp)
 {
-CCUpStatus* status=(CCUpStatus*)lp;
-if(NULL==status)
-{
-	
-return 1UL;
-}
+	CCUpStatus* status=(CCUpStatus*)lp;
+	if(NULL==status)
+	{
+		
+	return 1UL;
+	}
+
 	while(!status->m_Can_Exit)
 	{
-        Sleep(200);
+        Sleep(40);
 		status->DoUpdate();
 		//status->Invalidate();
 	}
+    status->m_Update_Thread_Exit=TRUE;
     //CMSBOX("here");
 	return 0;
 }
@@ -112,10 +134,25 @@ void CCUpStatus::DoUpdate()
 		//	++it_status;
 		//	continue;
 		//}
-		CString l_percent;
-		//l_percent.Format(L"%d%s",it_status->second.percent,L"%");
-		it_status->second.next->SetWindowText(it_status->second.s_percent);
-		it_status->second.m_Progress->SetPos(it_status->second.percent);
+		if(m_Can_Exit)
+		{
+			g_Map_Lock.Unlock();
+			return;
+		}
+		//CString csx;
+		//it_status->second.next->GetWindowText(csx);
+		//if(csx.Find(L"100")==-1)
+	//	{
+   //      if(it_status->second.percent!=100)
+		 //{
+   //       
+		 //}
+			CString l_percent;
+			//l_percent.Format(L"%d%s",it_status->second.percent,L"%");
+			it_status->second.next->SetWindowText(it_status->second.s_percent);
+			it_status->second.m_Progress->SetPos(it_status->second.percent);
+		
+		//}
 		++it_status;
 	}
 	g_Map_Lock.Unlock();
