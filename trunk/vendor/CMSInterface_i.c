@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Thu Mar 29 16:53:21 2012
+/* at Sat Mar 31 08:34:27 2012
  */
 /* Compiler settings for .\CMSInterface.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

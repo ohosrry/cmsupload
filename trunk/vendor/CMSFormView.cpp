@@ -16,6 +16,8 @@
 #include "CPreview.h"
 #include "CTools.h"
 #include <cmath>
+#include <CChineseCode.h>
+//#include "JsonBox.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -259,6 +261,15 @@ BOOL CCMSFormView::OnInitDialog(){
 	return TRUE;
 }
 
+BOOL CCMSFormView::IsInMTree(HTREEITEM root,CString str)
+{
+	if(!root)
+	{
+	  return TRUE;
+	}
+      
+	return FALSE;
+}
 
 
 
@@ -282,13 +293,24 @@ void CCMSFormView::OnTvnSelchangedDir(NMHDR *pNMHDR, LRESULT *pResult)
     //CMSBOXW(cs);
    if(fr.parse(W2A(cs),paths))
    {
+	   if(m_Tree.ItemHasChildren(root)){
+		   HTREEITEM hNextItem;
+		   // m_Tree.DeleteItem(root);
+		   HTREEITEM hChildItem =m_Tree.GetChildItem(root);
+		   while(NULL!=hChildItem )
+		   {
+			   hNextItem = m_Tree.GetNextItem(hChildItem, TVGN_NEXT);
+			   m_Tree.DeleteItem(hChildItem);
+			   hChildItem = hNextItem;
+		   }
+	   }
 	   if(paths.isObject()&&paths.size()>0)
 	   {
 		 
-		   if(m_Tree.ItemHasChildren(root))
-		   {
-		     return;
-		   }
+		   //if(m_Tree.ItemHasChildren(root))
+		   //{
+		   //  return;
+		   //}
 		   Value::iterator it=paths.begin();
 		   for(;it!=paths.end();++it)
 		   {
@@ -947,13 +969,24 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
              Value l_value;
 			 Reader fr;
 			 //CMSBOX(http_buff);
-			 char * l_buff=W2A((wchar_t*)http_buff);
+			 //string csxx;
+			 //TCHAR *ttw=A2W(http_buff);
+			 //TCHAR *tw=new TCHAR[102400];
+			 //char *tw=new char[1024];
+
+			 //CChineseCode::UTF_8ToUnicode(tw,http_buff);
+			 //CChineseCode::UnicodeToUTF_8(tw,ttw);
+			 //CChineseCode::UTF_8ToGB2312(csxx,tw,wcslen(ttw));
+			 //CMSBOX(http_buff);
+			 //char * l_buff=W2A((wchar_t*)http_buff);
+
 			// CMSBOX(http_buff);
 			 //sprintf_s(http_buff,102300,"%s","{\"code\":\"0\",\"msg\":\"บรถ๎\"}");
 			 if(fr.parse(http_buff,l_value))
 			 {
 				 if(l_value.isMember("code")&&l_value.isMember("msg"))
 				 {
+					// CMSBOXW(A2W(l_value["msg"].asString().c_str()));
                     if(strcmp(l_value["code"].asCString(),"0")==0)
 					{
 						map<CString,ST_STATUS>::iterator l_it_status=pMain->m_Status.m_Status_Map.find(l_file_name);

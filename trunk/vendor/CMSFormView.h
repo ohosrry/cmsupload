@@ -115,9 +115,11 @@ public:
 	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
+	BOOL IsInMTree(HTREEITEM root,CString str);
 	void OnPreview();
 	void UpdateUpLoadStatus(TCHAR *clientp,DOUBLE dltotal,DOUBLE dlnow,DOUBLE ultotal,DOUBLE ulnow);
 	static CCMSFormView * getInstance();
+	
 	afx_msg void OnNMRClickListUp(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMRClickListPic(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLvnKeydownListPic(NMHDR *pNMHDR, LRESULT *pResult);

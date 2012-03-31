@@ -144,7 +144,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\include;.\"
+				AdditionalIncludeDirectories=".\include;.\;D:\dev\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;"
 				KeepComments="false"
 				MinimalRebuild="false"
@@ -763,6 +763,10 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="json_box"
+				>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="header"
@@ -842,6 +846,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\stdint.h"
+				>
+			</File>
+			<File
 				RelativePath=".\targetver.h"
 				>
 			</File>
@@ -890,6 +898,10 @@
 				</File>
 				<File
 					RelativePath=".\lib\arpa_telnet.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\Array.h"
 					>
 				</File>
 				<File
@@ -950,6 +962,10 @@
 				</File>
 				<File
 					RelativePath=".\lib\content_encoding.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\Convert.h"
 					>
 				</File>
 				<File
@@ -1081,6 +1097,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\include\JsonBox\Escaper.h"
+					>
+				</File>
+				<File
 					RelativePath=".\lib\file.h"
 					>
 				</File>
@@ -1106,6 +1126,10 @@
 				</File>
 				<File
 					RelativePath=".\lib\gopher.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\Grammar.h"
 					>
 				</File>
 				<File
@@ -1149,11 +1173,23 @@
 					>
 				</File>
 				<File
+					RelativePath=".\include\JsonBox\IndentCanceller.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\Indenter.h"
+					>
+				</File>
+				<File
 					RelativePath=".\lib\inet_ntop.h"
 					>
 				</File>
 				<File
 					RelativePath=".\lib\inet_pton.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox.h"
 					>
 				</File>
 				<File
@@ -1198,6 +1234,14 @@
 				</File>
 				<File
 					RelativePath=".\lib\nssg.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\Object.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\OutputFilter.h"
 					>
 				</File>
 				<File
@@ -1281,6 +1325,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\include\JsonBox\SolidusEscaper.h"
+					>
+				</File>
+				<File
 					RelativePath=".\lib\speedcheck.h"
 					>
 				</File>
@@ -1350,6 +1398,10 @@
 				</File>
 				<File
 					RelativePath=".\lib\urldata.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\JsonBox\Value.h"
 					>
 				</File>
 				<File
