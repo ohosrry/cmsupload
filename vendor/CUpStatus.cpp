@@ -23,10 +23,10 @@ CCUpStatus::~CCUpStatus()
 void CCUpStatus::DoCleanUp()
 {
 	m_Can_Exit=TRUE;
-	while(!m_Update_Thread_Exit)
-	{
-      Sleep(10);
-	}
+	//while(!m_Update_Thread_Exit)
+	//{
+ //     Sleep(10);
+	//}
 	CDialog::OnClose();
 	g_Map_Lock.Lock();
 	map<CString,ST_STATUS>::iterator it=m_Status_Map.begin();
@@ -49,6 +49,12 @@ BOOL CCUpStatus::OnInitDialog()
 	CRect cr1(10,10,200,30);
 	/*m_Prog.Create(WS_CHILD|WS_VISIBLE|PBS_SMOOTH,cr1,this,0);
     m_Prog.SetPos(50);*/
+	//CFont cf;
+	LOGFONT lfont={0};
+	memset(&lfont, 0, sizeof(LOGFONT));
+	lfont.lfHeight=12;
+	wcscpy_s(lfont.lfFaceName, LF_FACESIZE, _T("Arial"));  
+	m_Font.CreateFontIndirect(&lfont);
 	while(it!=m_Status_Map.end())
 	{
 		CRect cr(originX,originY,originX+200,originY+20);
@@ -64,13 +70,8 @@ BOOL CCUpStatus::OnInitDialog()
 		it->second.next->Create(percent,WS_VISIBLE|WS_CHILD,next,this,0);
 		it->second.m_Progress->SetRange(0,100);
 		it->second.m_Progress->SetPos(0);
-		CFont cf;
-		LOGFONT lfont={0};
-		memset(&lfont, 0, sizeof(LOGFONT));
-		lfont.lfHeight=12;
-		wcscpy_s(lfont.lfFaceName, LF_FACESIZE, _T("Arial"));  
-		cf.CreateFontIndirect(&lfont);
-		it->second.pre->SetFont(&cf,FALSE);
+	
+		it->second.pre->SetFont(&m_Font,TRUE);
 
 		//it->second.pre->SetWindowText(l_Up_Text);
 		originY+=STATUS_LINE_SEP;
@@ -80,8 +81,10 @@ BOOL CCUpStatus::OnInitDialog()
 		//CMSBOXW(ccs);
 		++it;
 	}
-	//RedrawWindow();
-   AfxBeginThread(&CCUpStatus::UpdateThread,this);
+  /* CRect crect;
+   GetClientRect(&crect);
+   RedrawWindow(crect);*/
+  // AfxBeginThread(&CCUpStatus::UpdateThread,this);
    m_Update_Thread_Exit=FALSE;
 	return CDialog::OnInitDialog();
 }
@@ -104,20 +107,18 @@ void CCUpStatus::DoInit()
 
 UINT CCUpStatus::UpdateThread(LPVOID lp)
 {
-	CCUpStatus* status=(CCUpStatus*)lp;
-	if(NULL==status)
-	{
-		
-	return 1UL;
-	}
-
-	while(!status->m_Can_Exit)
-	{
-        Sleep(40);
-		status->DoUpdate();
-		//status->Invalidate();
-	}
-    status->m_Update_Thread_Exit=TRUE;
+	//CCUpStatus* status=(CCUpStatus*)lp;
+	//if(NULL==status)
+	//{
+	//	return 1UL;
+	//}
+	//while(!status->m_Can_Exit)
+	//{
+ //       Sleep(500);
+	//	//status->DoUpdate();
+	//	//status->Invalidate();
+	//}
+ //   status->m_Update_Thread_Exit=TRUE;
     //CMSBOX("here");
 	return 0;
 }

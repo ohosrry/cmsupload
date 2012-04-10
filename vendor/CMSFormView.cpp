@@ -139,6 +139,8 @@ BEGIN_MESSAGE_MAP(CCMSFormView, CDialog)
 	ON_NOTIFY(LVN_KEYDOWN, IDC_LIST_PIC, &CCMSFormView::OnLvnKeydownListPic)
 	ON_WM_CHAR()
 	ON_BN_CLICKED(IDC_CHECK_PIC, &CCMSFormView::OnBnClickedCheckPic)
+	ON_NOTIFY(NM_CLICK, IDC_LIST_PIC, &CCMSFormView::OnNMClickListPic)
+	ON_NOTIFY(NM_CLICK, IDC_LIST_UP, &CCMSFormView::OnNMClickListUp)
 END_MESSAGE_MAP()
 
 
@@ -999,6 +1001,7 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
                                //g_Map_Lock.Lock();
 
 							   l_it_status->second.s_percent=pMain->m_Error_Msg[l_value["code"].asCString()];
+							   pMain->m_Status.DoUpdate();
                                INT l_ret=_doFtpDelete(W2A(ftpUrl.AllocSysString()),W2A(uploadName.AllocSysString()),W2A(ftpUser.AllocSysString()),W2A(ftpPwd.AllocSysString()));
                                 if(l_ret==0)
 								{
@@ -1027,6 +1030,7 @@ UINT CCMSFormView::UploadThread(LPVOID lp){
 								g_Map_Lock.Lock();
 								l_it_status->second.s_percent=pMain->m_Error_Msg[l_value["code"].asCString()];
 								g_Map_Lock.Unlock();
+								pMain->m_Status.DoUpdate();
 							}
 						}
 					}
@@ -1100,7 +1104,7 @@ void CCMSFormView::OnBnClickedButtonUp()
 			   m_Status.m_Need_Init=FALSE;
 			}
 		
-			m_Status.ShowWindow(SW_SHOW);
+			m_Status.ShowWindow(SW_SHOWMAXIMIZED);
 			m_Status.DoInit();
 		}
 			
@@ -1250,6 +1254,14 @@ void CCMSFormView::UpdateUpLoadStatus(TCHAR *clientp,DOUBLE dltotal,DOUBLE dlnow
 	  m_Status.m_Status_Map[clientp].s_percent=css;
    }
    g_Map_Lock.Unlock();
+   if((INT)ceil(ulnow/ultotal*100)%10==0&&m_Status.m_Update_Ok!=FALSE)
+   {
+      m_Status.m_Update_Ok=FALSE;
+	  m_Status.DoUpdate();
+      m_Status.m_Update_Ok=TRUE;
+   }
+  
+   
    //m_Status.DoUpdate();
    //CMSBOXW(cs);
 
@@ -1298,4 +1310,20 @@ void CCMSFormView::OnBnClickedCheckPic()
 	m_List_Pic.SetFocus();
 
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CCMSFormView::OnNMClickListPic(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	((CButton*)GetDlgItem(IDC_CHECK_PIC))->SetCheck(FALSE);
+	// TODO: 在此添加控件通知处理程序代码
+	*pResult = 0;
+}
+
+void CCMSFormView::OnNMClickListUp(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	((CButton*)GetDlgItem(IDC_CHECK_ALL))->SetCheck(FALSE);
+	// TODO: 在此添加控件通知处理程序代码
+	*pResult = 0;
 }
