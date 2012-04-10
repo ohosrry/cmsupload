@@ -20,6 +20,8 @@ public:
 	BOOL m_Can_Create;
 	BOOL m_Need_Init;
 	BOOL m_Update_Thread_Exit;
+	CFont m_Font;
+	BOOL m_Update_Ok;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 

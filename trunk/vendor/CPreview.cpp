@@ -103,8 +103,11 @@ void CCPreview::OnPaint()
 	   GetClientRect(&cr);
 
 	   //SetWindowPos(NULL,cr.left,cr.right,l_w,l_h,0);
-
-	   dc.TransparentBlt(0,0,cr.Width(),cr.Height(),&l_Cdc,0,0,l_w,l_h,RGB(0, 0, 0));
+	   
+       SetStretchBltMode(dc.m_hDC,HALFTONE|BLACKONWHITE);
+	   SetStretchBltMode(l_Cdc.m_hDC,HALFTONE|BLACKONWHITE);
+	   SetStretchBltMode(ps.hdc,HALFTONE|BLACKONWHITE);
+	   dc.TransparentBlt(0,0,cr.Width(),cr.Height(),&l_Cdc,0,0,l_w,l_h,CLRBREAK);
 	   l_Cdc.SelectObject(lp_old_bmp);
 	   l_Cdc.DeleteDC();
 	   // m_Pic_Path=L"";

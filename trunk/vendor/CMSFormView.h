@@ -125,6 +125,8 @@ public:
 	afx_msg void OnLvnKeydownListPic(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnBnClickedCheckPic();
+	afx_msg void OnNMClickListPic(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnNMClickListUp(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 
